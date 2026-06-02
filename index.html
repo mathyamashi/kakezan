@@ -1,0 +1,848 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import confetti from 'canvas-confetti';
+import { Volume2, VolumeX, Sparkles, Trophy, Trash2, ArrowLeft, RefreshCw, XCircle, CheckCircle } from 'lucide-react';
+import { Level, Question, SessionResult, LEVEL_CONFIG } from './types';
+
+export default function App() {
+  const [view, setView] = useState<'menu' | 'drill' | 'results'>('menu');
+  const [isReady, setIsReady] = useState(false);
+  const [volume, setVolume] = useState<number>(() => {
+    try {
+      const savedVolume = localStorage.getItem('kuku-star-volume');
+      return savedVolume !== null ? parseInt(savedVolume, 10) : 50;
+    } catch {
+      return 50;
+    }
+  });
+
+  const lastQuestionKey = useRef<string | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  // Audio Context handling for web audio sounds
+  const ensureAudioContext = () => {
+    try {
+      if (!audioCtxRef.current) {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) {
+          audioCtxRef.current = new AudioContextClass();
+        }
+      }
+      if (audioCtxRef.current) {
+        if (audioCtxRef.current.state === 'suspended') {
+          audioCtxRef.current.resume();
+        }
+        // Unlock audio for iOS/Safari
+        const buffer = audioCtxRef.current.createBuffer(1, 1, 22050);
+        const source = audioCtxRef.current.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioCtxRef.current.destination);
+        source.start(0);
+      }
+    } catch (e) {
+      console.error("AudioContext initialization failed", e);
+    }
+    return audioCtxRef.current;
+  };
+
+  const playEffect = (type: 'test' | 'correct' | 'incorrect' | 'finish' | 'celebration', currentVolume: number = volume) => {
+    try {
+      const ctx = ensureAudioContext();
+      if (!ctx) return;
+
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(currentVolume / 100, ctx.currentTime);
+      masterGain.connect(ctx.destination);
+
+      if (type === 'test') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+        osc.frequency.setValueAtTime(440, ctx.currentTime);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.2);
+      } else if (type === 'correct') {
+        const playChime = (time: number, freq: number, duration: number) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, time);
+          gain.gain.setValueAtTime(0.2, time);
+          gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+          osc.connect(gain);
+          gain.connect(masterGain);
+          osc.start(time);
+          osc.stop(time + duration);
+        };
+        playChime(ctx.currentTime, 659.25, 0.4); // E5
+        playChime(ctx.currentTime + 0.15, 523.25, 0.6); // C5
+      } else if (type === 'incorrect') {
+        const playBuzzer = (time: number, duration: number) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(80, time);
+          gain.gain.setValueAtTime(0.08, time);
+          gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+          osc.connect(gain);
+          gain.connect(masterGain);
+          osc.start(time);
+          osc.stop(time + duration);
+        };
+        playBuzzer(ctx.currentTime, 0.1);
+        playBuzzer(ctx.currentTime + 0.15, 0.5);
+      } else if (type === 'finish') {
+        const playSparkle = (time: number, freq: number, duration: number) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, time);
+          gain.gain.setValueAtTime(0.2, time);
+          gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+          osc.connect(gain);
+          gain.connect(masterGain);
+          osc.start(time);
+          osc.stop(time + duration);
+        };
+        const now = ctx.currentTime;
+        playSparkle(now, 523.25, 0.3); // C5
+        playSparkle(now + 0.1, 659.25, 0.3); // E5
+        playSparkle(now + 0.2, 783.99, 0.3); // G5
+        playSparkle(now + 0.3, 1046.50, 0.5); // C6
+      } else if (type === 'celebration') {
+        const playNote = (time: number, freq: number, duration: number, oscType: OscillatorType = 'sine') => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = oscType;
+          osc.frequency.setValueAtTime(freq, time);
+          gain.gain.setValueAtTime(0.2, time);
+          gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+          osc.connect(gain);
+          gain.connect(masterGain);
+          osc.start(time);
+          osc.stop(time + duration);
+        };
+        const now = ctx.currentTime;
+        playNote(now, 523.25, 0.2); // C5
+        playNote(now + 0.15, 659.25, 0.2); // E5
+        playNote(now + 0.3, 783.99, 0.2); // G5
+        playNote(now + 0.45, 1046.50, 0.2); // C6
+        playNote(now + 0.6, 1318.51, 0.8, 'triangle'); // E6
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    setIsReady(true);
+    const unlock = () => {
+      ensureAudioContext();
+      window.removeEventListener('touchstart', unlock);
+      window.removeEventListener('mousedown', unlock);
+      window.removeEventListener('click', unlock);
+    };
+    window.addEventListener('touchstart', unlock, { passive: true });
+    window.addEventListener('mousedown', unlock);
+    window.addEventListener('click', unlock);
+
+    return () => {
+      window.removeEventListener('touchstart', unlock);
+      window.removeEventListener('mousedown', unlock);
+      window.removeEventListener('click', unlock);
+    };
+  }, []);
+
+  const [selectedLevel, setSelectedLevel] = useState<Level>(1);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [inputValue, setInputValue] = useState('');
+  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+  const [result, setResult] = useState<SessionResult | null>(null);
+  const [startTime, setStartTime] = useState(0);
+  const [badges, setBadges] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('kuku-star-badges');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const shuffle = <T,>(array: T[]): T[] => {
+    const copy = [...array];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  };
+
+  const startDrill = (level: Level) => {
+    ensureAudioContext();
+    setSelectedLevel(level);
+    const newQuestions: Question[] = [];
+    const seenPairs = new Set<string>();
+
+    if (typeof level === 'number') {
+      const bValues = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+      if (lastQuestionKey.current === `${level}x${bValues[0]}`) {
+        [bValues[0], bValues[bValues.length - 1]] = [bValues[bValues.length - 1], bValues[0]];
+      }
+      bValues.forEach((b, idx) => {
+        newQuestions.push({ id: `q-${idx}`, a: level, b, answer: level * b });
+      });
+    } else {
+      let bOneCount = 0;
+      while (newQuestions.length < 10) {
+        let a: number;
+        let b: number;
+        if (level === 'random_1x1') {
+          a = Math.floor(Math.random() * 9) + 1;
+          b = Math.floor(Math.random() * 9) + 1;
+        } else {
+          a = Math.floor(Math.random() * 90) + 10; // 2 digits
+          b = Math.floor(Math.random() * 9) + 1; // 1 digit
+          if (b === 1 && bOneCount >= 1) {
+            b = Math.floor(Math.random() * 8) + 2;
+          }
+        }
+        const key = `${a}x${b}`;
+        const reverseKey = `${b}x${a}`;
+        if (newQuestions.length === 0 && (lastQuestionKey.current === key || lastQuestionKey.current === reverseKey)) {
+          continue;
+        }
+        if (!seenPairs.has(key) && !seenPairs.has(reverseKey)) {
+          if (level === 'random_2x1' && b === 1) {
+            bOneCount++;
+          }
+          seenPairs.add(key);
+          newQuestions.push({ id: `q-${newQuestions.length}`, a, b, answer: a * b });
+        }
+      }
+    }
+    setQuestions(newQuestions);
+    setCurrentIndex(0);
+    setInputValue('');
+    setStartTime(Date.now());
+    setView('drill');
+  };
+
+  const handleAnswerSubmit = () => {
+    if (!inputValue) return;
+    const answer = parseInt(inputValue, 10);
+    const updatedQuestions = [...questions];
+    const isCorrect = answer === updatedQuestions[currentIndex].answer;
+    updatedQuestions[currentIndex].userAnswer = answer;
+    updatedQuestions[currentIndex].isCorrect = isCorrect;
+    setQuestions(updatedQuestions);
+    setFeedback(isCorrect ? 'correct' : 'incorrect');
+
+    playEffect(isCorrect ? 'correct' : 'incorrect');
+
+    setTimeout(() => {
+      setFeedback(null);
+      setInputValue('');
+      if (currentIndex < questions.length - 1) {
+        setCurrentIndex(currentIndex + 1);
+      } else {
+        const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+        const score = updatedQuestions.filter(q => q.isCorrect).length;
+        const accuracy = (score / updatedQuestions.length) * 100;
+        let badgeEarned = '';
+        let currentBadges = badges;
+
+        if (accuracy === 100 && typeof selectedLevel === 'number' && selectedLevel >= 1 && selectedLevel <= 9) {
+          badgeEarned = `${LEVEL_CONFIG[selectedLevel].name} 完ぺき!`;
+          if (!badges.includes(badgeEarned)) {
+            currentBadges = [...badges, badgeEarned];
+            setBadges(currentBadges);
+            try {
+              localStorage.setItem('kuku-star-badges', JSON.stringify(currentBadges));
+            } catch (e) {
+              console.error(e);
+            }
+          }
+        }
+
+        const lastQ = updatedQuestions[updatedQuestions.length - 1];
+        lastQuestionKey.current = `${lastQ.a}x${lastQ.b}`;
+
+        const basicKukuNames = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `${LEVEL_CONFIG[n].name} 完ぺき!`);
+        const hasAllBasicBadges = basicKukuNames.every(name => currentBadges.includes(name));
+        const isAllComplete = hasAllBasicBadges && typeof selectedLevel === 'number' && selectedLevel >= 1 && selectedLevel <= 9;
+        const isSpecialPerfect = accuracy === 100 && (typeof selectedLevel !== 'number' || selectedLevel > 9);
+
+        setResult({ score, total: updatedQuestions.length, timeTaken, accuracy, badgeEarned, isAllComplete, isSpecialPerfect });
+
+        const shouldCelebrate = isAllComplete || isSpecialPerfect;
+        playEffect(shouldCelebrate ? 'celebration' : 'finish');
+
+        if (shouldCelebrate) {
+          setTimeout(() => {
+            const duration = 3 * 1000;
+            const end = Date.now() + duration;
+            (function frame() {
+              confetti({
+                particleCount: 3,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: ['#fbbf24', '#f59e0b', '#ffffff']
+              });
+              confetti({
+                particleCount: 3,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: ['#fbbf24', '#f59e0b', '#ffffff']
+              });
+              if (Date.now() < end) {
+                requestAnimationFrame(frame);
+              }
+            }());
+          }, 500);
+        }
+        setView('results');
+      }
+    }, isCorrect ? 800 : 400);
+  };
+
+  const handleClearBadges = () => {
+    if (window.confirm('あつめたバッジをすべて消してやりなおしますか？')) {
+      setBadges([]);
+      try {
+        localStorage.removeItem('kuku-star-badges');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  const handleVolumeChange = (newVol: number) => {
+    setVolume(newVol);
+    try {
+      localStorage.setItem('kuku-star-volume', String(newVol));
+    } catch {}
+    playEffect('test', newVol);
+  };
+
+  if (!isReady) {
+    return (
+      <div className="flex justify-center items-center h-screen font-bold text-slate-500 text-lg">
+        読み込み中...
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen font-sans bg-orange-50 overflow-x-hidden relative pb-12">
+      {/* Dynamic Star Backdrop */}
+      <div className="fixed inset-0 pointer-events-none opacity-10 flex flex-wrap gap-12 p-8 overflow-hidden z-0">
+        {[...Array(60)].map((_, i) => (
+          <div key={i} className="text-orange-300 text-xl">🌟</div>
+        ))}
+      </div>
+
+      <AnimatePresence mode="wait">
+        {view === 'menu' && (
+          <MenuView
+            key="menu"
+            onStart={startDrill}
+            badges={badges}
+            volume={volume}
+            onChangeVolume={handleVolumeChange}
+            onClearBadges={handleClearBadges}
+          />
+        )}
+        {view === 'drill' && (
+          <DrillView
+            key="drill"
+            level={selectedLevel}
+            question={questions[currentIndex]}
+            currentIndex={currentIndex}
+            total={questions.length}
+            inputValue={inputValue}
+            setInputValue={setInputValue}
+            feedback={feedback}
+            onSubmit={handleAnswerSubmit}
+            onBack={() => setView('menu')}
+          />
+        )}
+        {view === 'results' && result && (
+          <ResultsView
+            key="results"
+            level={selectedLevel}
+            result={result}
+            questions={questions}
+            onRestart={() => startDrill(selectedLevel)}
+            onMenu={() => setView('menu')}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+interface MenuViewProps {
+  onStart: (level: Level) => void;
+  badges: string[];
+  volume: number;
+  onChangeVolume: (v: number) => void;
+  onClearBadges: () => void;
+  key?: string;
+}
+
+function MenuView({ onStart, badges, volume, onChangeVolume, onClearBadges }: MenuViewProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -15 }}
+      transition={{ duration: 0.3 }}
+      className="max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-6 relative z-10"
+    >
+      {/* Title & Mascot Section */}
+      <div className="text-center mb-4 flex flex-col items-center justify-center">
+        <motion.img
+          src="/kuku-star-lovely-mascot.png"
+          alt="Kuku Star Mascot"
+          className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-2xl shadow-md mb-2 border-2 border-yellow-300 pointer-events-none"
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.h1
+          animate={{ scale: [1, 1.02, 1] }}
+          transition={{ duration: 4, repeat: Infinity }}
+          className="text-3xl md:text-5xl font-black text-orange-500 tracking-tight drop-shadow-sm mb-0"
+        >
+          KUKU STAR
+        </motion.h1>
+        <p className="text-slate-400 font-bold text-xs md:text-sm">九九をマスターして🌟をあつめよう！</p>
+      </div>
+
+      {/* Sound Controller */}
+      <div className="mb-4 bg-white/60 py-2 px-4 rounded-2xl border border-orange-100 shadow-sm backdrop-blur-sm max-w-[240px] mx-auto">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => onChangeVolume(volume === 0 ? 50 : 0)}
+            className="text-orange-500 hover:text-orange-600 transition-colors"
+          >
+            {volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          </button>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={volume}
+            onChange={(e) => onChangeVolume(parseInt(e.target.value, 10))}
+            className="flex-1 h-1.5 bg-orange-100 rounded-lg appearance-none cursor-pointer accent-orange-400"
+          />
+          <span className="text-orange-600/70 font-bold text-xs min-w-[28px] text-right">{volume}%</span>
+        </div>
+        <p className="text-[10px] text-slate-400 mt-1 font-medium text-center">※マナーモードを解除して楽しんでね！</p>
+      </div>
+
+      <div className="space-y-4">
+        {/* Practice Grid: 九九のだん */}
+        <div className="bg-white/60 p-4 rounded-[1.5rem] lg:rounded-[2rem] border border-orange-100 shadow-sm backdrop-blur-sm">
+          <h2 className="text-sm md:text-lg font-black text-slate-600 mb-3 px-1 flex items-center gap-2">
+            <span className="bg-amber-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">🌟</span>
+            九九（くく）のだん
+          </h2>
+          <div className="grid grid-cols-3 gap-2 lg:gap-3">
+            {([1, 2, 3, 4, 5, 6, 7, 8, 9] as Level[]).map((lv) => (
+              <button
+                key={lv}
+                onClick={() => onStart(lv)}
+                className={`${LEVEL_CONFIG[lv].color} h-12 md:h-20 lg:h-16 rounded-xl lg:rounded-2xl flex flex-col items-center justify-center text-white shadow-md transition-all hover:brightness-105 active:scale-95 cursor-pointer border-b-2 lg:border-b-4 border-black/10`}
+              >
+                <span className="text-lg md:text-2xl leading-none mb-0.5">{LEVEL_CONFIG[lv].icon}</span>
+                <span className="font-extrabold text-[10px] md:text-sm lg:text-base">{LEVEL_CONFIG[lv].name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Badge Achievements */}
+        <div className="bg-yellow-400/10 rounded-2xl p-4 border border-yellow-200">
+          <div className="flex justify-between items-center mb-3 px-1">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-3">
+              <h2 className="text-sm font-black text-yellow-700 flex items-center gap-1.5 uppercase tracking-wider">
+                🏆 あつめた🌟 ({badges.length})
+              </h2>
+              {([1, 2, 3, 4, 5, 6, 7, 8, 9] as Level[]).every(num => badges.includes(`${LEVEL_CONFIG[num].name} 完ぺき!`)) && (
+                <motion.span
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="text-[10px] lg:text-xs font-black text-orange-500 bg-white px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap"
+                >
+                  ✨ ぜんぶかんぺき！がんばったね！
+                </motion.span>
+              )}
+            </div>
+            {badges.length > 0 && (
+              <button
+                onClick={onClearBadges}
+                className="text-xs font-bold text-slate-400 hover:text-rose-400 transition-colors flex items-center gap-1"
+              >
+                <Trash2 size={12} /> クリア
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-9 gap-1">
+            {([1, 2, 3, 4, 5, 6, 7, 8, 9] as Level[]).map((num) => {
+              const isMastered = badges.includes(`${LEVEL_CONFIG[num].name} 完ぺき!`);
+              return (
+                <div key={num} className="flex flex-col items-center gap-0.5">
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      scale: isMastered ? [1, 1.2, 1] : 1,
+                      filter: isMastered ? 'grayscale(0%)' : 'grayscale(100%)',
+                      opacity: isMastered ? 1 : 0.3
+                    }}
+                    className={`text-xl lg:text-3xl ${isMastered ? 'drop-shadow-[0_0_8px_rgba(250,204,21,0.6)] animate-pulse' : ''}`}
+                  >
+                    🌟
+                  </motion.div>
+                  <span className={`text-[8px] lg:text-[10px] font-bold whitespace-nowrap ${isMastered ? 'text-yellow-600' : 'text-slate-300'}`}>
+                    {num}のだん
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Special / Advanced Badges */}
+          {badges.filter(b => !b.includes('のだん')).length > 0 && (
+            <div className="mt-3 pt-3 border-t border-yellow-200/30 flex flex-wrap gap-1.5">
+              {badges.filter(b => !b.includes('のだん')).map((b, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="bg-white border border-yellow-100 text-yellow-700 px-2 rounded-full text-[10px] font-bold shadow-sm flex items-center gap-1"
+                >
+                  <span>🌟</span> {b}
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Advanced Levels & Random Options Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* おおきな数 (10 / 100 だん) */}
+          <div className="bg-white/60 p-4 rounded-[1.5rem] lg:rounded-[2rem] border border-orange-100 shadow-sm backdrop-blur-sm">
+            <h2 className="text-sm md:text-base font-black text-slate-600 mb-3 px-1 flex items-center gap-2">
+              <span className="bg-teal-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">✨</span>
+              おおきな数
+            </h2>
+            <div className="grid grid-cols-2 gap-2">
+              {([10, 100] as Level[]).map((lv) => (
+                <button
+                  key={lv}
+                  onClick={() => onStart(lv)}
+                  className={`${LEVEL_CONFIG[lv].color} h-11 rounded-xl lg:rounded-2xl flex items-center justify-center gap-2 text-white shadow-md transition-all hover:brightness-105 active:scale-95 cursor-pointer`}
+                >
+                  <span className="text-base">{LEVEL_CONFIG[lv].icon}</span>
+                  <span className="font-black text-xs md:text-sm lg:text-base">{LEVEL_CONFIG[lv].name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ランダムチャレンジ */}
+          <div className="bg-white/60 p-4 rounded-[1.5rem] lg:rounded-[2rem] border border-orange-100 shadow-sm backdrop-blur-sm">
+            <h2 className="text-sm md:text-base font-black text-slate-600 mb-3 px-1 flex items-center gap-2">
+              <span className="bg-indigo-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">🚀</span>
+              ランダムチャレンジ
+            </h2>
+            <div className="grid grid-cols-2 gap-2">
+              {(['random_1x1', 'random_2x1'] as Level[]).map((lv) => (
+                <button
+                  key={lv}
+                  onClick={() => onStart(lv)}
+                  className={`${LEVEL_CONFIG[lv].color} h-11 rounded-xl lg:rounded-2xl flex items-center justify-center gap-2 text-white shadow-md transition-all hover:brightness-105 active:scale-95 cursor-pointer`}
+                >
+                  <span className="text-base">{LEVEL_CONFIG[lv].icon}</span>
+                  <span className="font-black text-xs md:text-sm lg:text-base">{LEVEL_CONFIG[lv].name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+interface DrillViewProps {
+  level: Level;
+  question: Question;
+  currentIndex: number;
+  total: number;
+  inputValue: string;
+  setInputValue: React.Dispatch<React.SetStateAction<string>>;
+  feedback: 'correct' | 'incorrect' | null;
+  onSubmit: () => void;
+  onBack: () => void;
+  key?: string;
+}
+
+function DrillView({
+  level,
+  question,
+  currentIndex,
+  total,
+  inputValue,
+  setInputValue,
+  feedback,
+  onSubmit,
+  onBack
+}: DrillViewProps) {
+  const addNumber = (num: number) => {
+    if (inputValue.length < 3) {
+      setInputValue(inputValue + num);
+    }
+  };
+
+  const deleteLast = () => {
+    setInputValue('');
+  };
+
+  return (
+    <div className={`min-h-screen ${LEVEL_CONFIG[level].color} flex flex-col p-3 relative overflow-hidden transition-colors duration-500`}>
+      {/* Toast Overlay style animations for Feedback */}
+      <AnimatePresence>
+        {feedback === 'correct' && (
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 1.3, opacity: 0 }}
+            className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none"
+          >
+            <div className="bg-white/95 px-8 py-4 rounded-full shadow-2xl border-4 border-yellow-300 flex items-center gap-3">
+              <CheckCircle size={36} className="text-green-500" />
+              <span className="text-3xl md:text-5xl font-black text-orange-500 text-center">せいかい！</span>
+            </div>
+          </motion.div>
+        )}
+        {feedback === 'incorrect' && (
+          <motion.div
+            initial={{ x: -15, opacity: 0 }}
+            animate={{ x: [0, -10, 10, -10, 10, 0], opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none"
+          >
+            <div className="bg-white/95 px-8 py-4 rounded-2xl shadow-2xl border-4 border-slate-300 flex items-center gap-3">
+              <XCircle size={36} className="text-rose-500" />
+              <span className="text-3xl md:text-5xl font-black text-slate-500 text-center">ざんねん</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="max-w-md mx-auto w-full flex-1 flex flex-col justify-between">
+        {/* Navigation / Progress indicator */}
+        <div className="flex justify-between items-center text-white mt-1 mb-2">
+          <button
+            onClick={onBack}
+            className="text-xs md:text-sm font-bold bg-black/10 px-4 py-1.5 rounded-full flex items-center gap-1 hover:bg-black/20"
+          >
+            <ArrowLeft size={14} /> もどる
+          </button>
+          <div className="bg-white/20 px-4 py-1 rounded-full font-black text-xs md:text-sm tracking-widest leading-normal">
+            {currentIndex + 1} / {total} 問
+          </div>
+        </div>
+
+        {/* Question Panel */}
+        <div className="flex-1 flex flex-col justify-center items-center py-2">
+          <motion.div
+            key={question.id}
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', damping: 15 }}
+            className="w-full bg-white rounded-[2rem] p-4 shadow-2xl flex flex-col items-center relative"
+          >
+            {/* Hanging mascot emoji */}
+            <div className="absolute -top-6 left-6 text-4xl animate-bounce">
+              {LEVEL_CONFIG[level].icon}
+            </div>
+
+            {/* Formula display */}
+            <div className="flex items-center gap-3 md:gap-5 mb-4 mt-2">
+              <span className="text-4xl md:text-6xl font-black text-slate-800 tabular-nums">{question.a}</span>
+              <span className="text-xl md:text-3xl font-bold text-slate-300">×</span>
+              <span className="text-4xl md:text-6xl font-black text-slate-800 tabular-nums">{question.b}</span>
+              <span className="text-xl md:text-3xl font-bold text-slate-300">＝</span>
+            </div>
+
+            {/* Display and Keypad combo */}
+            <div className="w-full max-w-[280px]">
+              {/* Answer display box */}
+              <div className="w-full text-4xl md:text-5xl font-black p-2.5 rounded-2xl bg-slate-50 text-orange-500 min-h-[56px] md:min-h-[70px] flex items-center justify-center mb-4 border-2 border-slate-100">
+                {inputValue || <span className="text-slate-200">?</span>}
+              </div>
+
+              {/* Pad elements */}
+              <div className="grid grid-cols-3 gap-2">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                  <button
+                    key={num}
+                    onClick={() => addNumber(num)}
+                    className="bg-slate-50 hover:bg-slate-100 text-slate-700 font-extrabold text-xl py-2.5 round-xl rounded-xl active:scale-90 transition-transform border border-slate-200/50 shadow-sm cursor-pointer"
+                  >
+                    {num}
+                  </button>
+                ))}
+                <button
+                  onClick={deleteLast}
+                  className="bg-rose-50 hover:bg-rose-100 text-rose-500 font-bold text-sm py-2.5 rounded-xl active:scale-95 shadow-sm cursor-pointer"
+                >
+                  けす
+                </button>
+                <button
+                  onClick={() => addNumber(0)}
+                  className="bg-slate-50 hover:bg-slate-100 text-slate-700 font-extrabold text-xl py-2.5 rounded-xl active:scale-95 shadow-sm cursor-pointer"
+                >
+                  0
+                </button>
+                <button
+                  onClick={onSubmit}
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-black text-lg py-2.5 rounded-xl shadow-lg active:scale-95 cursor-pointer"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface ResultsViewProps {
+  level: Level;
+  result: SessionResult;
+  questions: Question[];
+  onRestart: () => void;
+  onMenu: () => void;
+  key?: string;
+}
+
+function ResultsView({ level, result, questions, onRestart, onMenu }: ResultsViewProps) {
+  const isPerfect = result.accuracy === 100;
+  const isAllComplete = result.isAllComplete;
+  const incorrectQs = questions.filter(q => !q.isCorrect);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen bg-white/95 flex items-center justify-center p-3 overflow-y-auto"
+    >
+      <div className="max-w-md w-full bg-orange-50 rounded-[2rem] p-5 shadow-xl text-center border-4 border-white relative overflow-hidden">
+        {/* Full Complete Crown Celebration Modal overlay inside the card */}
+        {isAllComplete && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="absolute inset-0 bg-yellow-400 flex flex-col items-center justify-center z-20 p-5"
+          >
+            <div className="text-5xl md:text-6xl mb-3">👑</div>
+            <h2 className="text-xl md:text-2xl font-black text-white mb-2 leading-tight">
+              ぜんぶクリア！<br />おめでとう！
+            </h2>
+            <p className="text-yellow-100 font-bold mb-6 text-xs md:text-sm">
+              九九マスターのあかしを<br />てにいれたね！
+            </p>
+            <button
+              onClick={onMenu}
+              className="w-full py-3 rounded-2xl bg-white text-yellow-600 font-black text-base md:text-lg shadow-lg active:scale-95 cursor-pointer"
+            >
+              メニューへもどる
+            </button>
+          </motion.div>
+        )}
+
+        <div className="text-4xl md:text-5xl mb-2">
+          {isPerfect ? '🏅' : LEVEL_CONFIG[level].icon}
+        </div>
+        <h2 className="text-lg md:text-2xl font-black text-slate-800 mb-0.5">
+          {isPerfect ? 'か ん ぺ き ！' : 'お つ か れ さ ま ！'}
+        </h2>
+        <p className="text-slate-400 font-bold mb-4 text-xs md:text-sm">
+          {LEVEL_CONFIG[level].name} のけっか
+        </p>
+
+        {/* Interactive Stats Grid */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="bg-white rounded-2xl p-3 shadow-sm border border-orange-100">
+            <p className="text-slate-300 font-black text-[10px] mb-0.5">せいかい</p>
+            <p className="text-xl md:text-2xl font-black text-slate-800">{result.score} / {result.total}</p>
+          </div>
+          <div className="bg-white rounded-2xl p-3 shadow-sm border border-orange-100">
+            <p className="text-slate-300 font-black text-[10px] mb-0.5">じかん</p>
+            <p className="text-xl font-black text-slate-800 whitespace-nowrap">
+              {Math.floor(result.timeTaken / 60) > 0 ? `${Math.floor(result.timeTaken / 60)}ふん` : ''}
+              {result.timeTaken % 60}びょう
+            </p>
+          </div>
+        </div>
+
+        {/* Badge Alert */}
+        {result.badgeEarned && (
+          <div className="bg-yellow-400 text-white p-2.5 rounded-xl mb-4 shadow-md">
+            <p className="font-extrabold text-[9px] uppercase tracking-wider">✨ NEW BADGE ✨</p>
+            <p className="text-sm md:text-lg font-black">{result.badgeEarned}</p>
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div className="space-y-2 mb-4">
+          <button
+            onClick={onRestart}
+            className={`${LEVEL_CONFIG[level].color} w-full py-2.5 rounded-xl text-white font-black text-sm md:text-base shadow-md active:scale-95 cursor-pointer hover:brightness-105`}
+          >
+            もう一回チャレンジする！
+          </button>
+          <button
+            onClick={onMenu}
+            className="w-full py-2.5 rounded-xl bg-white text-slate-400 font-black text-sm md:text-base border border-slate-200 active:scale-95 cursor-pointer hover:bg-slate-50"
+          >
+            メニューへもどる
+          </button>
+        </div>
+
+        {/* Weakness analysis / Mistake review */}
+        {incorrectQs.length > 0 && (
+          <div className="text-left border-t border-orange-100 pt-3">
+            <h3 className="text-rose-500 font-black mb-1.5 text-xs flex items-center gap-1.5 uppercase tracking-wider">
+              <span>✍️</span> ふくしゅうしよう！
+            </h3>
+            <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
+              {incorrectQs.map((q, i) => (
+                <div
+                  key={i}
+                  className="bg-white p-2 rounded-xl flex items-center justify-between font-bold text-slate-700 text-xs border border-rose-100"
+                >
+                  <span>{q.a} × {q.b} ＝ {q.answer}</span>
+                  <span className="text-rose-400 text-[10px]">きみのこたえ: {q.userAnswer ?? '?'}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
