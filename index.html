@@ -547,24 +547,13 @@
       }
 
       function MenuView({ onStart, badges, volume, onChangeVolume, onClearBadges }) {
-        const [mascotError, setMascotError] = useState(false);
-
         return (
           <div className="max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-6 relative z-10 fade-enter fade-enter-active">
             {/* Title & Mascot Section */}
             <div className="text-center mb-4 flex flex-col items-center justify-center">
-              {!mascotError ? (
-                <img
-                  src="./kuku-star-lovely-mascot.png"
-                  onError={() => setMascotError(true)}
-                  alt="Kuku Star Mascot"
-                  className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-2xl shadow-md mb-2 border-2 border-yellow-300 pointer-events-none hover:scale-110 transition-transform duration-300"
-                />
-              ) : (
-                <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 filter drop-shadow-md mb-2 pointer-events-none animate-bounce">
-                  <KukuMascot className="w-full h-full" />
-                </div>
-              )}
+              <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 filter drop-shadow-md mb-2 pointer-events-none">
+                <KukuMascot className="w-full h-full" />
+              </div>
               <h1 className="text-3xl md:text-5xl font-black text-orange-500 tracking-tight drop-shadow-sm mb-0">
                 KUKU STAR
               </h1>
