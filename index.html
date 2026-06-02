@@ -3,849 +3,869 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KUKU STAR (九九スター)</title>
+    <title>KUKU STAR (九九スター) - GitHubコピペ用</title>
     <!-- Web Clip / PWA Support for iOS and Mobiles -->
-    <link rel="apple-touch-icon" href="./kuku-star-lovely-mascot.png?v=new_cute_star_v2">
-    <link rel="apple-touch-icon" href="./public/kuku-star-lovely-mascot.png?v=new_cute_star_v2">
-    <link rel="icon" type="image/png" href="./kuku-star-lovely-mascot.png?v=new_cute_star_v2">
-    <link rel="icon" type="image/png" href="./public/kuku-star-lovely-mascot.png?v=new_cute_star_v2">
-    <link rel="manifest" href="./site.webmanifest?v=new_cute_star_v2">
-    <link rel="manifest" href="./public/site.webmanifest?v=new_cute_star_v2">
+    <link rel="apple-touch-icon" href="./kuku-star-lovely-mascot.png">
+    <link rel="icon" type="image/png" href="./kuku-star-lovely-mascot.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="九九スター">
-    <script>
-        // パス解決用のフォールバックスクリプト
-        (function() {
-            var iconFilename = 'kuku-star-lovely-mascot.png?v=new_cute_star_v2';
-            var pathname = window.location.pathname;
-            var base = '/';
-            if (pathname.includes('.')) {
-                base = pathname.substring(0, pathname.lastIndexOf('/') + 1);
-            } else {
-                base = pathname.endsWith('/') ? pathname : pathname + '/';
-            }
-            
-            var img = new Image();
-            img.onload = function() {
-                updateAssets(base + iconFilename, base + 'site.webmanifest?v=new_cute_star_v2');
-            };
-            img.onerror = function() {
-                window.KUKU_STAR_USE_PUBLIC_DIR = true;
-                var resolvedImg = base + 'public/' + iconFilename;
-                var resolvedManifest = base + 'public/site.webmanifest?v=new_cute_star_v2';
-                updateAssets(resolvedImg, resolvedManifest);
-            };
-            img.src = base + iconFilename;
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Fredoka+One&display=swap" rel="stylesheet">
 
-            function updateAssets(resolvedImg, resolvedManifest) {
-                var links = document.querySelectorAll('link[rel*="icon"], link[rel="apple-touch-icon"]');
-                links.forEach(function(link) {
-                    link.setAttribute('href', resolvedImg);
-                });
-                var manifests = document.querySelectorAll('link[rel="manifest"]');
-                manifests.forEach(function(l) {
-                    l.setAttribute('href', resolvedManifest);
-                });
-            }
-        })();
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS (Play CDN v3) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"M PLUS Rounded 1c"', 'ui-sans-serif', 'system-ui'],
-                    },
-                }
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"M PLUS Rounded 1c"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+              kids: ['"Fredoka One"', 'cursive'],
             }
+          }
         }
+      }
     </script>
+    
     <style>
-        body {
-            background-color: #fffaf0;
-            color: #334155;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.05);
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(0,0,0,0.1);
-            border-radius: 10px;
-        }
-        @keyframes floatEffect {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-        .animate-float {
-            animation: floatEffect 3.5s ease-in-out infinite;
-        }
+      @keyframes shine {
+        0% { transform: scale(0.8); opacity: 0.5; }
+        50% { transform: scale(1.2); opacity: 1; }
+        100% { transform: scale(0.8); opacity: 0.5; }
+      }
+      .star-shine {
+        background: radial-gradient(circle, #fff 0%, transparent 70%);
+        animation: shine 2s infinite;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(249, 115, 22, 0.3);
+        border-radius: 9999px;
+      }
+      
+      /* Simple Transitions */
+      .fade-enter {
+        opacity: 0;
+        transform: translateY(15px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+      .fade-enter-active {
+        opacity: 1;
+        transform: translateY(0);
+      }
     </style>
 </head>
-<body>
+<body class="bg-orange-50 text-slate-800 antialiased font-sans">
+
     <div id="root"></div>
 
-    <script>
-        window.process = { env: { NODE_ENV: 'production' } };
-    </script>
+    <!-- React 18 & ReactDOM 18 (Cdn fallback production) -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
-    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js" crossorigin></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
+    <!-- Babel standalone for runtime JSX compiler -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Canvas Confetti for perfect victories -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- Main React App Script in Babel (transpiled in browser) -->
     <script type="text/babel">
-        const { useState, useEffect, useMemo, useRef } = React;
+      const { useState, useEffect, useMemo, useRef } = React;
 
-        // --- 100%クラッシュのないインラインSVGアイコン ---
-        const Volume2Icon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>;
-        const VolumeXIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>;
-        const Trash2Icon = () => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>;
-        const ArrowLeftIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>;
-        const CheckCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-green-500 w-8 h-8 md:w-10 md:h-10"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
-        const XCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500 w-8 h-8 md:w-10 md:h-10"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>;
+      // Color and configurations
+      const LEVEL_CONFIG = {
+        1: { color: 'bg-rose-400', hoverColor: 'hover:bg-rose-500', name: '1のだん', icon: '🍎' },
+        2: { color: 'bg-orange-400', hoverColor: 'hover:bg-orange-500', name: '2のだん', icon: '🐱' },
+        3: { color: 'bg-amber-400', hoverColor: 'hover:bg-amber-500', name: '3のだん', icon: '🐤' },
+        4: { color: 'bg-emerald-400', hoverColor: 'hover:bg-emerald-500', name: '4のだん', icon: '🍀' },
+        5: { color: 'bg-blue-400', hoverColor: 'hover:bg-blue-500', name: '5のだん', icon: '🐬' },
+        6: { color: 'bg-indigo-400', hoverColor: 'hover:bg-indigo-500', name: '6のだん', icon: '☂️' },
+        7: { color: 'bg-violet-400', hoverColor: 'hover:bg-violet-500', name: '7のだん', icon: '🌈' },
+        8: { color: 'bg-fuchsia-400', hoverColor: 'hover:bg-fuchsia-500', name: '8のだん', icon: '🐙' },
+        9: { color: 'bg-pink-400', hoverColor: 'hover:bg-pink-500', name: '9のだん', icon: '🍦' },
+        10: { color: 'bg-teal-400', hoverColor: 'hover:bg-teal-500', name: '10のだん', icon: '✨' },
+        100: { color: 'bg-cyan-400', hoverColor: 'hover:bg-cyan-500', name: '100のだん', icon: '🌌' },
+        'random_1x1': { color: 'bg-slate-700', hoverColor: 'hover:bg-slate-800', name: '1けた×1けた', icon: '🎲' },
+        'random_2x1': { color: 'bg-indigo-600', hoverColor: 'hover:bg-indigo-700', name: '2けた×1けた', icon: '🚀' },
+      };
 
-        const LEVEL_CONFIG = {
-            1: { color: 'bg-rose-400', name: '1のだん', icon: '🍎' },
-            2: { color: 'bg-orange-400', name: '2のだん', icon: '🐱' },
-            3: { color: 'bg-amber-400', name: '3のだん', icon: '🐤' },
-            4: { color: 'bg-emerald-400', name: '4のだん', icon: '🍀' },
-            5: { color: 'bg-blue-400', name: '5のだん', icon: '🐬' },
-            6: { color: 'bg-indigo-400', name: '6のだん', icon: '☂️' },
-            7: { color: 'bg-violet-400', name: '7のだん', icon: '🌈' },
-            8: { color: 'bg-fuchsia-400', name: '8のだん', icon: '🐙' },
-            9: { color: 'bg-pink-400', name: '9のだん', icon: '🍦' },
-            10: { color: 'bg-teal-400', name: '10のだん', icon: '✨' },
-            100: { color: 'bg-cyan-400', name: '100のだん', icon: '🌌' },
-            'random_1x1': { color: 'bg-slate-700', name: '1けた×1けた', icon: '🎲' },
-            'random_2x1': { color: 'bg-indigo-600', name: '2けた×1けた', icon: '🚀' },
+      // Inline Custom Icons
+      const SparklesIcon = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" className="inline ml-1" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/><path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5Z"/><path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1Z"/></svg>
+      );
+      const Volume2Icon = ({ size = 18 }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4.7 6 9H2v6h4l5 4.3V4.7z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+      );
+      const VolumeXIcon = ({ size = 18 }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4.7 6 9H2v6h4l5 4.3V4.7z"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>
+      );
+      const Trash2Icon = ({ size = 12 }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+      );
+      const ArrowLeftIcon = ({ size = 14 }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+      );
+      const CheckCircleIcon = ({ size = 36, className }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      );
+      const XCircleIcon = ({ size = 36, className }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+      );
+
+      function App() {
+        const [view, setView] = useState('menu');
+        const [volume, setVolume] = useState(() => {
+          try {
+            const savedVolume = localStorage.getItem('kuku-star-volume');
+            return savedVolume !== null ? parseInt(savedVolume, 10) : 50;
+          } catch {
+            return 50;
+          }
+        });
+
+        const lastQuestionKey = useRef(null);
+        const audioCtxRef = useRef(null);
+
+        // Web Audio functions for safe multiplatform soundeffects
+        const ensureAudioContext = () => {
+          try {
+            if (!audioCtxRef.current) {
+              const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+              if (AudioContextClass) {
+                audioCtxRef.current = new AudioContextClass();
+              }
+            }
+            if (audioCtxRef.current) {
+              if (audioCtxRef.current.state === 'suspended') {
+                audioCtxRef.current.resume();
+              }
+              const buffer = audioCtxRef.current.createBuffer(1, 1, 22050);
+              const source = audioCtxRef.current.createBufferSource();
+              source.buffer = buffer;
+              source.connect(audioCtxRef.current.destination);
+              source.start(0);
+            }
+          } catch (e) {
+            console.error("AudioContext initialization failed", e);
+          }
+          return audioCtxRef.current;
         };
 
-        const MascotImage = ({ alt, className, ...props }) => {
-            const pathname = window.location.pathname;
-            let base = '/';
-            if (pathname.includes('.')) {
-                base = pathname.substring(0, pathname.lastIndexOf('/') + 1);
+        const playEffect = (type, currentVolume = volume) => {
+          try {
+            const ctx = ensureAudioContext();
+            if (!ctx) return;
+
+            const masterGain = ctx.createGain();
+            masterGain.gain.setValueAtTime(currentVolume / 100, ctx.currentTime);
+            masterGain.connect(ctx.destination);
+
+            if (type === 'test') {
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              gain.gain.setValueAtTime(0.2, ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+              osc.frequency.setValueAtTime(440, ctx.currentTime);
+              osc.connect(gain);
+              gain.connect(masterGain);
+              osc.start();
+              osc.stop(ctx.currentTime + 0.2);
+            } else if (type === 'correct') {
+              const playChime = (time, freq, duration) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, time);
+                gain.gain.setValueAtTime(0.2, time);
+                gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(time);
+                osc.stop(time + duration);
+              };
+              playChime(ctx.currentTime, 659.25, 0.4); // E5
+              playChime(ctx.currentTime + 0.15, 523.25, 0.6); // C5
+            } else if (type === 'incorrect') {
+              const playBuzzer = (time, duration) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(80, time);
+                gain.gain.setValueAtTime(0.08, time);
+                gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(time);
+                osc.stop(time + duration);
+              };
+              playBuzzer(ctx.currentTime, 0.1);
+              playBuzzer(ctx.currentTime + 0.15, 0.5);
+            } else if (type === 'finish') {
+              const playSparkle = (time, freq, duration) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, time);
+                gain.gain.setValueAtTime(0.2, time);
+                gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(time);
+                osc.stop(time + duration);
+              };
+              const now = ctx.currentTime;
+              playSparkle(now, 523.25, 0.3); // C5
+              playSparkle(now + 0.1, 659.25, 0.3); // E5
+              playSparkle(now + 0.2, 783.99, 0.3); // G5
+              playSparkle(now + 0.3, 1046.50, 0.5); // C6
+            } else if (type === 'celebration') {
+              const playNote = (time, freq, duration, oscType = 'sine') => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = oscType;
+                osc.frequency.setValueAtTime(freq, time);
+                gain.gain.setValueAtTime(0.2, time);
+                gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(time);
+                osc.stop(time + duration);
+              };
+              const now = ctx.currentTime;
+              playNote(now, 523.25, 0.2); // C5
+              playNote(now + 0.15, 659.25, 0.2); // E5
+              playNote(now + 0.3, 783.99, 0.2); // G5
+              playNote(now + 0.45, 1046.50, 0.2); // C6
+              playNote(now + 0.6, 1318.51, 0.8, 'triangle'); // E6
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        };
+
+        useEffect(() => {
+          const unlock = () => {
+            ensureAudioContext();
+            window.removeEventListener('touchstart', unlock);
+            window.removeEventListener('mousedown', unlock);
+            window.removeEventListener('click', unlock);
+          };
+          window.addEventListener('touchstart', unlock, { passive: true });
+          window.addEventListener('mousedown', unlock);
+          window.addEventListener('click', unlock);
+
+          return () => {
+            window.removeEventListener('touchstart', unlock);
+            window.removeEventListener('mousedown', unlock);
+            window.removeEventListener('click', unlock);
+          };
+        }, []);
+
+        const [selectedLevel, setSelectedLevel] = useState(1);
+        const [questions, setQuestions] = useState([]);
+        const [currentIndex, setCurrentIndex] = useState(0);
+        const [inputValue, setInputValue] = useState('');
+        const [feedback, setFeedback] = useState(null);
+        const [result, setResult] = useState(null);
+        const [startTime, setStartTime] = useState(0);
+        const [badges, setBadges] = useState(() => {
+          try {
+            const saved = localStorage.getItem('kuku-star-badges');
+            return saved ? JSON.parse(saved) : [];
+          } catch {
+            return [];
+          }
+        });
+
+        const shuffle = (array) => {
+          const copy = [...array];
+          for (let i = copy.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [copy[i], copy[j]] = [copy[j], copy[i]];
+          }
+          return copy;
+        };
+
+        const startDrill = (level) => {
+          ensureAudioContext();
+          setSelectedLevel(level);
+          const newQuestions = [];
+          const seenPairs = new Set();
+
+          if (typeof level === 'number') {
+            const bValues = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+            if (lastQuestionKey.current === `${level}x${bValues[0]}`) {
+              [bValues[0], bValues[bValues.length - 1]] = [bValues[bValues.length - 1], bValues[0]];
+            }
+            bValues.forEach((b, idx) => {
+              newQuestions.push({ id: `q-${idx}`, a: level, b, answer: level * b });
+            });
+          } else {
+            let bOneCount = 0;
+            while (newQuestions.length < 10) {
+              let a;
+              let b;
+              if (level === 'random_1x1') {
+                a = Math.floor(Math.random() * 9) + 1;
+                b = Math.floor(Math.random() * 9) + 1;
+              } else {
+                a = Math.floor(Math.random() * 90) + 10;
+                b = Math.floor(Math.random() * 9) + 1;
+                if (b === 1 && bOneCount >= 1) {
+                  b = Math.floor(Math.random() * 8) + 2;
+                }
+              }
+              const key = `${a}x${b}`;
+              const reverseKey = `${b}x${a}`;
+              if (newQuestions.length === 0 && (lastQuestionKey.current === key || lastQuestionKey.current === reverseKey)) {
+                continue;
+              }
+              if (!seenPairs.has(key) && !seenPairs.has(reverseKey)) {
+                if (level === 'random_2x1' && b === 1) {
+                  bOneCount++;
+                }
+                seenPairs.add(key);
+                newQuestions.push({ id: `q-${newQuestions.length}`, a, b, answer: a * b });
+              }
+            }
+          }
+          setQuestions(newQuestions);
+          setCurrentIndex(0);
+          setInputValue('');
+          setStartTime(Date.now());
+          setView('drill');
+        };
+
+        const handleAnswerSubmit = () => {
+          if (!inputValue) return;
+          const answer = parseInt(inputValue, 10);
+          const updatedQuestions = [...questions];
+          const isCorrect = answer === updatedQuestions[currentIndex].answer;
+          updatedQuestions[currentIndex].userAnswer = answer;
+          updatedQuestions[currentIndex].isCorrect = isCorrect;
+          setQuestions(updatedQuestions);
+          setFeedback(isCorrect ? 'correct' : 'incorrect');
+
+          playEffect(isCorrect ? 'correct' : 'incorrect');
+
+          setTimeout(() => {
+            setFeedback(null);
+            setInputValue('');
+            if (currentIndex < questions.length - 1) {
+              setCurrentIndex(currentIndex + 1);
             } else {
-                base = pathname.endsWith('/') ? pathname : pathname + '/';
-            }
+              const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+              const score = updatedQuestions.filter(q => q.isCorrect).length;
+              const accuracy = (score / updatedQuestions.length) * 100;
+              let badgeEarned = '';
+              let currentBadges = badges;
 
-            const candidates = useMemo(() => [
-                `${base}kuku-star-lovely-mascot.png?v=new_cute_star_v2`,
-                `${base}public/kuku-star-lovely-mascot.png?v=new_cute_star_v2`,
-                `./kuku-star-lovely-mascot.png?v=new_cute_star_v2`,
-                `./public/kuku-star-lovely-mascot.png?v=new_cute_star_v2`
-            ], [base]);
-
-            const [index, setIndex] = useState(0);
-
-            const handleError = () => {
-                if (index < candidates.length - 1) {
-                    setIndex(prev => prev + 1);
+              if (accuracy === 100 && typeof selectedLevel === 'number' && selectedLevel >= 1 && selectedLevel <= 9) {
+                badgeEarned = `${LEVEL_CONFIG[selectedLevel].name} 完ぺき!`;
+                if (!badges.includes(badgeEarned)) {
+                  currentBadges = [...badges, badgeEarned];
+                  setBadges(currentBadges);
+                  try {
+                    localStorage.setItem('kuku-star-badges', JSON.stringify(currentBadges));
+                  } catch (e) {
+                    console.error(e);
+                  }
                 }
-            };
+              }
 
-            return (
-                <motion.img 
-                    src={candidates[index]} 
-                    alt={alt} 
-                    className={className}
-                    onError={handleError}
-                    {...props}
-                />
-            );
-        };
+              const lastQ = updatedQuestions[updatedQuestions.length - 1];
+              lastQuestionKey.current = `${lastQ.a}x${lastQ.b}`;
 
-        const getMotion = () => {
-            const M = window.Motion || window.FramerMotion;
-            if (M && M.motion) {
-                return { motion: M.motion, AnimatePresence: M.AnimatePresence };
-            }
-            return {
-                motion: {
-                    div: 'div', button: 'button', h1: 'h1', p: 'p', span: 'span',
-                    nav: 'nav', section: 'section', header: 'header', img: 'img'
-                },
-                AnimatePresence: ({ children }) => <React.Fragment>{children}</React.Fragment>
-            };
-        };
+              const basicKukuNames = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `${LEVEL_CONFIG[n].name} 完ぺき!`);
+              const hasAllBasicBadges = basicKukuNames.every(name => currentBadges.includes(name));
+              const isAllComplete = hasAllBasicBadges && typeof selectedLevel === 'number' && selectedLevel >= 1 && selectedLevel <= 9;
+              const isSpecialPerfect = accuracy === 100 && (typeof selectedLevel !== 'number' || selectedLevel > 9);
 
-        const { motion, AnimatePresence } = getMotion();
+              setResult({ score, total: updatedQuestions.length, timeTaken, accuracy, badgeEarned, isAllComplete, isSpecialPerfect });
 
-        function App() {
-            const [view, setView] = useState('menu');
-            const [isReady, setIsReady] = useState(false);
-            const [volume, setVolume] = useState(() => {
-                try {
-                    const saved = localStorage.getItem('kuku-star-volume');
-                    return saved !== null ? parseInt(saved, 10) : 50;
-                } catch { return 50; }
-            });
-            const lastQuestionKey = useRef(null);
-            const audioCtxRef = useRef(null);
+              const shouldCelebrate = isAllComplete || isSpecialPerfect;
+              playEffect(shouldCelebrate ? 'celebration' : 'finish');
 
-            const ensureAudioContext = () => {
-                try {
-                    if (!audioCtxRef.current) {
-                        const AudioContext = window.AudioContext || window.webkitAudioContext;
-                        if (AudioContext) {
-                            audioCtxRef.current = new AudioContext();
-                        }
-                    }
-                    if (audioCtxRef.current) {
-                        if (audioCtxRef.current.state === 'suspended') {
-                            audioCtxRef.current.resume();
-                        }
-                        const buffer = audioCtxRef.current.createBuffer(1, 1, 22050);
-                        const source = audioCtxRef.current.createBufferSource();
-                        source.buffer = buffer;
-                        source.connect(audioCtxRef.current.destination);
-                        source.start(0);
-                    }
-                } catch (e) {}
-                return audioCtxRef.current;
-            };
-
-            const playEffect = (type, currentVolume = volume) => {
-                try {
-                    const ctx = ensureAudioContext();
-                    if (!ctx) return;
-                    
-                    const masterGain = ctx.createGain();
-                    masterGain.gain.setValueAtTime(currentVolume / 100, ctx.currentTime);
-                    masterGain.connect(ctx.destination);
-
-                    if (type === 'test') {
-                        const osc = ctx.createOscillator();
-                        const gain = ctx.createGain();
-                        gain.gain.setValueAtTime(0.2, ctx.currentTime);
-                        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-                        osc.frequency.setValueAtTime(440, ctx.currentTime);
-                        osc.connect(gain);
-                        gain.connect(masterGain);
-                        osc.start();
-                        osc.stop(ctx.currentTime + 0.2);
-                    } else if (type === 'correct') {
-                        const playChime = (time, freq, duration) => {
-                            const osc = ctx.createOscillator();
-                            const gain = ctx.createGain();
-                            osc.type = 'sine';
-                            osc.frequency.setValueAtTime(freq, time);
-                            gain.gain.setValueAtTime(0.2, time);
-                            gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
-                            osc.connect(gain);
-                            gain.connect(masterGain);
-                            osc.start(time);
-                            osc.stop(time + duration);
-                        };
-                        playChime(ctx.currentTime, 659.25, 0.4);
-                        playChime(ctx.currentTime + 0.15, 523.25, 0.6);
-                    } else if (type === 'incorrect') {
-                        const playBuzzer = (time, duration) => {
-                            const osc = ctx.createOscillator();
-                            const gain = ctx.createGain();
-                            osc.type = 'sawtooth';
-                            osc.frequency.setValueAtTime(80, time);
-                            gain.gain.setValueAtTime(0.08, time);
-                            gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
-                            osc.connect(gain);
-                            gain.connect(masterGain);
-                            osc.start(time);
-                            osc.stop(time + duration);
-                        };
-                        playBuzzer(ctx.currentTime, 0.1);
-                        playBuzzer(ctx.currentTime + 0.15, 0.5);
-                    } else if (type === 'finish') {
-                        const playSparkle = (time, freq, duration) => {
-                            const osc = ctx.createOscillator();
-                            const gain = ctx.createGain();
-                            osc.type = 'sine';
-                            osc.frequency.setValueAtTime(freq, time);
-                            gain.gain.setValueAtTime(0.2, time);
-                            gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
-                            osc.connect(gain);
-                            gain.connect(masterGain);
-                            osc.start(time);
-                            osc.stop(time + duration);
-                        };
-                        const now = ctx.currentTime;
-                        playSparkle(now, 523.25, 0.3);
-                        playSparkle(now + 0.1, 659.25, 0.3);
-                        playSparkle(now + 0.2, 783.99, 0.3);
-                        playSparkle(now + 0.3, 1046.50, 0.5);
-                    } else if (type === 'celebration') {
-                        const playNote = (time, freq, duration, oscType = 'sine') => {
-                            const osc = ctx.createOscillator();
-                            const gain = ctx.createGain();
-                            osc.type = oscType;
-                            osc.frequency.setValueAtTime(freq, time);
-                            gain.gain.setValueAtTime(0.2, time);
-                            gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
-                            osc.connect(gain);
-                            gain.connect(masterGain);
-                            osc.start(time);
-                            osc.stop(time + duration);
-                        };
-                        const now = ctx.currentTime;
-                        playNote(now, 523.25, 0.2);
-                        playNote(now + 0.15, 659.25, 0.2);
-                        playNote(now + 0.3, 783.99, 0.2);
-                        playNote(now + 0.45, 1046.50, 0.2);
-                        playNote(now + 0.6, 1318.51, 0.8, 'triangle');
-                    }
-                } catch (e) {}
-            };
-
-            useEffect(() => {
-                setIsReady(true);
-                const unlock = () => {
-                    ensureAudioContext();
-                    window.removeEventListener('touchstart', unlock);
-                    window.removeEventListener('mousedown', unlock);
-                    window.removeEventListener('click', unlock);
-                };
-                window.addEventListener('touchstart', unlock, { passive: true });
-                window.addEventListener('mousedown', unlock);
-                window.addEventListener('click', unlock);
-
-                return () => {
-                    window.removeEventListener('touchstart', unlock);
-                    window.removeEventListener('mousedown', unlock);
-                    window.removeEventListener('click', unlock);
-                };
-            }, []);
-
-            const [selectedLevel, setSelectedLevel] = useState(1);
-            const [questions, setQuestions] = useState([]);
-            const [currentIndex, setCurrentIndex] = useState(0);
-            const [inputValue, setInputValue] = useState('');
-            const [feedback, setFeedback] = useState(null);
-            const [result, setResult] = useState(null);
-            const [startTime, setStartTime] = useState(0);
-            const [badges, setBadges] = useState(() => {
-                try {
-                    const saved = localStorage.getItem('kuku-star-badges');
-                    return saved ? JSON.parse(saved) : [];
-                } catch (e) { return []; }
-            });
-
-            const shuffle = (array) => {
-                const copy = [...array];
-                for (let i = copy.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [copy[i], copy[j]] = [copy[j], copy[i]];
-                }
-                return copy;
-            };
-
-            const startDrill = (level) => {
-                ensureAudioContext();
-                setSelectedLevel(level);
-                const newQuestions = [];
-                const seenPairs = new Set();
-                
-                if (typeof level === 'number') {
-                    const bValues = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-                    if (lastQuestionKey.current === `${level}x${bValues[0]}`) {
-                        [bValues[0], bValues[bValues.length - 1]] = [bValues[bValues.length - 1], bValues[0]];
-                    }
-                    bValues.forEach((b, idx) => {
-                        newQuestions.push({ id: `q-${idx}`, a: level, b, answer: level * b });
-                    });
-                } else {
-                    let bOneCount = 0;
-                    while (newQuestions.length < 10) {
-                        let a, b;
-                        if (level === 'random_1x1') {
-                            a = Math.floor(Math.random() * 9) + 1;
-                            b = Math.floor(Math.random() * 9) + 1;
-                        } else {
-                            a = Math.floor(Math.random() * 90) + 10;
-                            b = Math.floor(Math.random() * 9) + 1;
-                            if (b === 1 && bOneCount >= 1) {
-                                b = Math.floor(Math.random() * 8) + 2;
-                            }
-                        }
-                        const key = `${a}x${b}`;
-                        const reverseKey = `${b}x${a}`;
-                        if (newQuestions.length === 0 && (lastQuestionKey.current === key || lastQuestionKey.current === reverseKey)) continue;
-                        if (!seenPairs.has(key) && !seenPairs.has(reverseKey)) {
-                            if (level === 'random_2x1' && b === 1) bOneCount++;
-                            seenPairs.add(key);
-                            newQuestions.push({ id: `q-${newQuestions.length}`, a, b, answer: a * b });
-                        }
-                    }
-                }
-                setQuestions(newQuestions);
-                setCurrentIndex(0);
-                setInputValue('');
-                setStartTime(Date.now());
-                setView('drill');
-            };
-
-            const handleAnswerSubmit = () => {
-                if (!inputValue) return;
-                const answer = parseInt(inputValue, 10);
-                const updatedQuestions = [...questions];
-                const isCorrect = answer === updatedQuestions[currentIndex].answer;
-                updatedQuestions[currentIndex].userAnswer = answer;
-                updatedQuestions[currentIndex].isCorrect = isCorrect;
-                setQuestions(updatedQuestions);
-                setFeedback(isCorrect ? 'correct' : 'incorrect');
-                
-                playEffect(isCorrect ? 'correct' : 'incorrect');
-
+              if (shouldCelebrate) {
                 setTimeout(() => {
-                    setFeedback(null);
-                    setInputValue('');
-                    if (currentIndex < questions.length - 1) {
-                        setCurrentIndex(currentIndex + 1);
-                    } else {
-                        let timeTaken = Math.floor((Date.now() - startTime) / 1000);
-                        let score = updatedQuestions.filter(q => q.isCorrect).length;
-                        let accuracy = (score / updatedQuestions.length) * 100;
-                        let badgeEarned = '';
-                        let currentBadges = badges;
-                        if (accuracy === 100 && typeof selectedLevel === 'number' && selectedLevel >= 1 && selectedLevel <= 9) {
-                            badgeEarned = `${LEVEL_CONFIG[selectedLevel].name} 完ぺき!`;
-                            if (!badges.includes(badgeEarned)) {
-                                currentBadges = [...badges, badgeEarned];
-                                setBadges(currentBadges);
-                                try { localStorage.setItem('kuku-star-badges', JSON.stringify(currentBadges)); } catch(e) {}
-                            }
-                        }
-                        const lastQ = updatedQuestions[updatedQuestions.length - 1];
-                        lastQuestionKey.current = `${lastQ.a}x${lastQ.b}`;
-                        
-                        const basicKukuNames = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `${LEVEL_CONFIG[n].name} 完ぺき!`);
-                        const hasAllBasicBadges = basicKukuNames.every(name => currentBadges.includes(name));
-                        const isAllComplete = hasAllBasicBadges && typeof selectedLevel === 'number' && selectedLevel >= 1 && selectedLevel <= 9;
-                        const isSpecialPerfect = accuracy === 100 && (typeof selectedLevel !== 'number' || selectedLevel > 9);
-                        
-                        setResult({ score, total: updatedQuestions.length, timeTaken, accuracy, badgeEarned, isAllComplete, isSpecialPerfect });
-                        
-                        const shouldCelebrate = isAllComplete || isSpecialPerfect;
-                        playEffect(shouldCelebrate ? 'celebration' : 'finish');
-                        
-                        if (shouldCelebrate) {
-                            setTimeout(() => {
-                                const duration = 3 * 1000;
-                                const end = Date.now() + duration;
-                                (function frame() {
-                                    confetti({
-                                        particleCount: 3,
-                                        angle: 60,
-                                        spread: 55,
-                                        origin: { x: 0 },
-                                        colors: ['#fbbf24', '#f59e0b', '#ffffff']
-                                    });
-                                    confetti({
-                                        particleCount: 3,
-                                        angle: 120,
-                                        spread: 55,
-                                        origin: { x: 1 },
-                                        colors: ['#fbbf24', '#f59e0b', '#ffffff']
-                                    });
-                                    if (Date.now() < end) requestAnimationFrame(frame);
-                                }());
-                            }, 500);
-                        }
-                        setView('results');
-                    }
-                }, isCorrect ? 800 : 400);
-            };
+                  const duration = 3 * 1000;
+                  const end = Date.now() + duration;
+                  (function frame() {
+                    confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#fbbf24', '#f59e0b', '#ffffff'] });
+                    confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#fbbf24', '#f59e0b', '#ffffff'] });
+                    if (Date.now() < end) requestAnimationFrame(frame);
+                  }());
+                }, 500);
+              }
+              setView('results');
+            }
+          }, isCorrect ? 800 : 400);
+        };
 
-            const handleClearBadges = () => {
-                if (window.confirm('あつめたバッジをすべて消してやりなおしますか？')) {
-                    setBadges([]);
-                    try { localStorage.removeItem('kuku-star-badges'); } catch(e) {}
-                }
-            };
+        const handleClearBadges = () => {
+          if (window.confirm('あつめたバッジをすべて消してやりなおしますか？')) {
+            setBadges([]);
+            try {
+              localStorage.removeItem('kuku-star-badges');
+            } catch (e) {
+              console.error(e);
+            }
+          }
+        };
 
-            const handleVolumeChange = (newVol) => {
-                setVolume(newVol);
-                try {
-                    localStorage.setItem('kuku-star-volume', String(newVol));
-                } catch(e) {}
-                playEffect('test', newVol);
-            };
+        const handleVolumeChange = (newVol) => {
+          setVolume(newVol);
+          try {
+            localStorage.setItem('kuku-star-volume', String(newVol));
+          } catch {}
+          playEffect('test', newVol);
+        };
 
-            return (
-                <div className="min-h-screen font-sans bg-orange-50 overflow-x-hidden relative pb-12">
-                    <div className="fixed inset-0 pointer-events-none opacity-10 flex flex-wrap gap-12 p-8 overflow-hidden z-0">
-                         {[...Array(60)].map((_, i) => (<div key={i} className="text-orange-300 text-xl">🌟</div>))}
-                    </div>
+        return (
+          <div className="min-h-screen font-sans bg-orange-50 overflow-x-hidden relative pb-12">
+            {/* Dynamic Star Backdrop */}
+            <div className="fixed inset-0 pointer-events-none opacity-10 flex flex-wrap gap-12 p-8 overflow-hidden z-0">
+              {[...Array(60)].map((_, i) => (
+                <div key={i} className="text-orange-300 text-xl">🌟</div>
+              ))}
+            </div>
 
-                    <AnimatePresence mode="wait">
-                        {view === 'menu' && (
-                            <MenuView 
-                                key="menu" 
-                                onStart={startDrill} 
-                                badges={badges} 
-                                volume={volume} 
-                                onChangeVolume={handleVolumeChange} 
-                                onClearBadges={handleClearBadges} 
-                            />
-                        )}
-                        {view === 'drill' && (
-                            <DrillView 
-                                key="drill" 
-                                level={selectedLevel} 
-                                question={questions[currentIndex]}
-                                currentIndex={currentIndex} 
-                                total={questions.length}
-                                inputValue={inputValue} 
-                                setInputValue={setInputValue}
-                                feedback={feedback} 
-                                onSubmit={handleAnswerSubmit} 
-                                onBack={() => setView('menu')}
-                            />
-                        )}
-                        {view === 'results' && result && (
-                            <ResultsView 
-                                key="results" 
-                                level={selectedLevel} 
-                                result={result}
-                                questions={questions} 
-                                onRestart={() => startDrill(selectedLevel)} 
-                                onMenu={() => setView('menu')}
-                            />
-                        )}
-                    </AnimatePresence>
+            <div className="relative z-10 transition-all duration-300">
+              {view === 'menu' && (
+                <MenuView
+                  onStart={startDrill}
+                  badges={badges}
+                  volume={volume}
+                  onChangeVolume={handleVolumeChange}
+                  onClearBadges={handleClearBadges}
+                />
+              )}
+              {view === 'drill' && (
+                <DrillView
+                  level={selectedLevel}
+                  question={questions[currentIndex]}
+                  currentIndex={currentIndex}
+                  total={questions.length}
+                  inputValue={inputValue}
+                  setInputValue={setInputValue}
+                  feedback={feedback}
+                  onSubmit={handleAnswerSubmit}
+                  onBack={() => setView('menu')}
+                />
+              )}
+              {view === 'results' && result && (
+                <ResultsView
+                  level={selectedLevel}
+                  result={result}
+                  questions={questions}
+                  onRestart={() => startDrill(selectedLevel)}
+                  onMenu={() => setView('menu')}
+                />
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      function MenuView({ onStart, badges, volume, onChangeVolume, onClearBadges }) {
+        const [mascotError, setMascotError] = useState(false);
+
+        return (
+          <div className="max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-6 relative z-10 fade-enter fade-enter-active">
+            {/* Title & Mascot Section */}
+            <div className="text-center mb-4 flex flex-col items-center justify-center">
+              {!mascotError ? (
+                <img
+                  src="./kuku-star-lovely-mascot.png"
+                  onError={() => setMascotError(true)}
+                  alt="Kuku Star Mascot"
+                  className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-2xl shadow-md mb-2 border-2 border-yellow-300 pointer-events-none hover:scale-110 transition-transform duration-300"
+                />
+              ) : (
+                <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-2xl bg-yellow-100 flex items-center justify-center text-3xl md:text-4xl shadow-md mb-2 border-2 border-yellow-300 pointer-events-none animate-bounce">
+                  🌟
                 </div>
-            );
-        }
+              )}
+              <h1 className="text-3xl md:text-5xl font-black text-orange-500 tracking-tight drop-shadow-sm mb-0">
+                KUKU STAR
+              </h1>
+              <p className="text-slate-400 font-bold text-xs md:text-sm">九九をマスターして🌟をあつめよう！</p>
+            </div>
 
-        function MenuView({ onStart, badges, volume, onChangeVolume, onClearBadges }) {
-            return (
-                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }} className="max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-6 relative z-10">
-                    <div className="text-center mb-4 flex flex-col items-center justify-center">
-                        <MascotImage 
-                            alt="Kuku Star Mascot" 
-                            className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-2xl shadow-md mb-2 border-2 border-yellow-300 pointer-events-none animate-float"
-                            animate={{ y: [0, -6, 0] }}
-                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                        />
-                        <motion.h1 animate={{ scale: [1, 1.02, 1] }} transition={{ duration: 4, repeat: Infinity }} className="text-3xl md:text-5xl font-black text-orange-500 tracking-tight drop-shadow-sm mb-0">
-                            KUKU STAR
-                        </motion.h1>
-                        <p className="text-slate-400 font-bold text-xs md:text-sm">九九をマスターして🌟をあつめよう！</p>
-                    </div>
+            {/* Sound Controller */}
+            <div className="mb-4 bg-white/60 py-2 px-4 rounded-2xl border border-orange-100 shadow-sm backdrop-blur-sm max-w-[240px] mx-auto">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => onChangeVolume(volume === 0 ? 50 : 0)}
+                  className="text-orange-500 hover:text-orange-600 transition-colors"
+                >
+                  {volume === 0 ? <VolumeXIcon size={18} /> : <Volume2Icon size={18} />}
+                </button>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={volume}
+                  onChange={(e) => onChangeVolume(parseInt(e.target.value, 10))}
+                  className="flex-1 h-1.5 bg-orange-100 rounded-lg appearance-none cursor-pointer accent-orange-400"
+                />
+                <span className="text-orange-600/70 font-bold text-xs min-w-[28px] text-right">{volume}%</span>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1 font-medium text-center">※マナーモードを解除して楽しんでね！</p>
+            </div>
 
-                    <div className="mb-4 bg-white/60 py-2 px-4 rounded-2xl border border-orange-100 shadow-sm backdrop-blur-sm max-w-[240px] mx-auto">
-                        <div className="flex items-center gap-3">
-                            <button onClick={() => onChangeVolume(volume === 0 ? 50 : 0)} className="text-orange-500 hover:text-orange-600 transition-colors">
-                                {volume === 0 ? <VolumeXIcon /> : <Volume2Icon />}
-                            </button>
-                            <input 
-                                type="range" min="0" max="100" value={volume} 
-                                onChange={(e) => onChangeVolume(parseInt(e.target.value, 10))}
-                                className="flex-1 h-1.5 bg-orange-100 rounded-lg appearance-none cursor-pointer accent-orange-400"
-                            />
-                            <span className="text-orange-600/70 font-bold text-xs min-w-[28px] text-right">{volume}%</span>
-                        </div>
-                        <p className="text-[10px] text-slate-400 mt-1 font-medium text-center">※マナーモードを解除して楽しんでね！</p>
-                    </div>
-
-                    <div className="space-y-4">
-                        <div className="bg-white/60 p-4 rounded-[1.5rem] lg:rounded-[2rem] border border-orange-100 shadow-sm backdrop-blur-sm">
-                            <h2 className="text-sm md:text-lg font-black text-slate-600 mb-3 px-1 flex items-center gap-2">
-                                <span className="bg-amber-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">🌟</span>
-                                九九（くく）のだん
-                            </h2>
-                            <div className="grid grid-cols-3 gap-2 lg:gap-3">
-                                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((lv) => (
-                                    <button
-                                        key={lv} onClick={() => onStart(lv)}
-                                        className={`${LEVEL_CONFIG[lv].color} h-12 md:h-20 lg:h-16 rounded-xl lg:rounded-2xl flex flex-col items-center justify-center text-white shadow-md transition-all hover:brightness-105 active:scale-95 cursor-pointer border-b-2 lg:border-b-4 border-black/10`}
-                                    >
-                                        <span className="text-lg md:text-2xl leading-none mb-0.5">{LEVEL_CONFIG[lv].icon}</span>
-                                        <span className="font-extrabold text-[10px] md:text-sm lg:text-base">{LEVEL_CONFIG[lv].name}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="bg-yellow-400/10 rounded-2xl p-4 border border-yellow-200">
-                            <div className="flex justify-between items-center mb-3 px-1">
-                                <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-3">
-                                    <h2 className="text-sm font-black text-yellow-700 flex items-center gap-1.5 uppercase tracking-wider">
-                                        🏆 あつめた🌟 ({badges.length})
-                                    </h2>
-                                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].every(num => badges.includes(`${LEVEL_CONFIG[num].name} 完ぺき!`)) && (
-                                        <motion.span 
-                                            initial={{ opacity: 0, x: -10 }} 
-                                            animate={{ opacity: 1, x: 0 }}
-                                            className="text-[10px] lg:text-xs font-black text-orange-500 bg-white px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap"
-                                        >
-                                            ✨ ぜんぶかんぺき！がんばったね！
-                                        </motion.span>
-                                    )}
-                                </div>
-                                {badges.length > 0 && (
-                                    <button 
-                                        onClick={onClearBadges}
-                                        className="text-xs font-bold text-slate-400 hover:text-rose-400 transition-colors flex items-center gap-1"
-                                    >
-                                        <Trash2Icon /> クリア
-                                    </button>
-                                )}
-                            </div>
-                            <div className="grid grid-cols-9 gap-1">
-                                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => {
-                                    const isMastered = badges.includes(`${LEVEL_CONFIG[num].name} 完ぺき!`);
-                                    return (
-                                        <div key={num} className="flex flex-col items-center gap-0.5">
-                                            <motion.div 
-                                                initial={false}
-                                                animate={{ 
-                                                    scale: isMastered ? [1, 1.2, 1] : 1,
-                                                    filter: isMastered ? 'grayscale(0%)' : 'grayscale(100%)',
-                                                    opacity: isMastered ? 1 : 0.3
-                                                }}
-                                                className={`text-xl lg:text-3xl ${isMastered ? 'drop-shadow-[0_0_8px_rgba(250,204,21,0.6)] animate-pulse' : ''}`}
-                                            >
-                                                🌟
-                                            </motion.div>
-                                            <span className={`text-[8px] lg:text-[10px] font-bold whitespace-nowrap ${isMastered ? 'text-yellow-600' : 'text-slate-300'}`}>
-                                                {num}のだん
-                                            </span>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                            
-                            {badges.filter(b => !b.includes('のだん')).length > 0 && (
-                                <div className="mt-3 pt-3 border-t border-yellow-200/30 flex flex-wrap gap-1.5">
-                                    {badges.filter(b => !b.includes('のだん')).map((b, i) => (
-                                        <motion.div key={i} initial={{ scale: 0 }} animate={{ scale: 1 }} className="bg-white border border-yellow-100 text-yellow-700 px-2 rounded-full text-[10px] font-bold shadow-sm flex items-center gap-1">
-                                            <span>🌟</span> {b}
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-white/60 p-4 rounded-[1.5rem] lg:rounded-[2rem] border border-orange-100 shadow-sm backdrop-blur-sm">
-                                <h2 className="text-sm md:text-base font-black text-slate-600 mb-3 px-1 flex items-center gap-2">
-                                    <span className="bg-teal-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">✨</span>
-                                    おおきな数
-                                </h2>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {[10, 100].map((lv) => (
-                                        <button
-                                            key={lv} onClick={() => onStart(lv)}
-                                            className={`${LEVEL_CONFIG[lv].color} h-11 rounded-xl lg:rounded-2xl flex items-center justify-center gap-2 text-white shadow-md transition-all hover:brightness-105 active:scale-95 cursor-pointer`}
-                                        >
-                                            <span className="text-base">{LEVEL_CONFIG[lv].icon}</span>
-                                            <span className="font-black text-xs md:text-sm lg:text-base">{LEVEL_CONFIG[lv].name}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="bg-white/60 p-4 rounded-[1.5rem] lg:rounded-[2rem] border border-orange-100 shadow-sm backdrop-blur-sm">
-                                <h2 className="text-sm md:text-base font-black text-slate-600 mb-3 px-1 flex items-center gap-2">
-                                    <span className="bg-indigo-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">🚀</span>
-                                    ランダムチャレンジ
-                                </h2>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {['random_1x1', 'random_2x1'].map((lv) => (
-                                        <button
-                                            key={lv} onClick={() => onStart(lv)}
-                                            className={`${LEVEL_CONFIG[lv].color} h-11 rounded-xl lg:rounded-2xl flex items-center justify-center gap-2 text-white shadow-md transition-all hover:brightness-105 active:scale-95 cursor-pointer`}
-                                        >
-                                            <span className="text-base">{LEVEL_CONFIG[lv].icon}</span>
-                                            <span className="font-black text-xs md:text-sm lg:text-base">{LEVEL_CONFIG[lv].name}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
-            );
-        }
-
-        function DrillView({ level, question, currentIndex, total, inputValue, setInputValue, feedback, onSubmit, onBack }) {
-            const addNumber = (num) => {
-                if (inputValue.length < 3) setInputValue(inputValue + num);
-            };
-            const deleteLast = () => {
-                setInputValue('');
-            };
-            return (
-                <div className={`min-h-screen ${LEVEL_CONFIG[level].color} flex flex-col p-3 relative overflow-hidden transition-colors duration-500`}>
-                    <AnimatePresence>
-                        {feedback === 'correct' && (
-                            <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 1.3, opacity: 0 }} className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-                                <div className="bg-white/95 px-8 py-4 rounded-full shadow-2xl border-4 border-yellow-300 flex items-center gap-3">
-                                    <CheckCircleIcon />
-                                    <span className="text-3xl md:text-5xl font-black text-orange-500 text-center">せいかい！</span>
-                                </div>
-                            </motion.div>
-                        )}
-                        {feedback === 'incorrect' && (
-                            <motion.div initial={{ x: -15, opacity: 0 }} animate={{ x: [0, -10, 10, -10, 10, 0], opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-                                <div className="bg-white/95 px-8 py-4 rounded-2xl shadow-2xl border-4 border-slate-300 flex items-center gap-3">
-                                    <XCircleIcon />
-                                    <span className="text-3xl md:text-5xl font-black text-slate-500 text-center">ざんねん</span>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    <div className="max-w-md mx-auto w-full flex-1 flex flex-col justify-between">
-                        <div className="flex justify-between items-center text-white mt-1 mb-2">
-                            <button onClick={onBack} className="text-xs md:text-sm font-bold bg-black/10 px-4 py-1.5 rounded-full flex items-center gap-1 hover:bg-black/20">
-                                <ArrowLeftIcon /> もどる
-                            </button>
-                            <div className="bg-white/20 px-4 py-1 rounded-full font-black text-xs md:text-sm tracking-widest leading-normal">
-                                {currentIndex + 1} / {total} 問
-                            </div>
-                        </div>
-
-                        <div className="flex-1 flex flex-col justify-center items-center py-2">
-                            <motion.div key={question.id} initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', damping: 15 }} className="w-full bg-white rounded-[2rem] p-4 shadow-2xl flex flex-col items-center relative">
-                                <div className="absolute -top-6 left-6 text-4xl animate-bounce">
-                                    {LEVEL_CONFIG[level].icon}
-                                </div>
-
-                                <div className="flex items-center gap-3 md:gap-5 mb-4 mt-2">
-                                    <span className="text-4xl md:text-6xl font-black text-slate-800 tabular-nums">{question.a}</span>
-                                    <span className="text-xl md:text-3xl font-bold text-slate-300">×</span>
-                                    <span className="text-4xl md:text-6xl font-black text-slate-800 tabular-nums">{question.b}</span>
-                                    <span className="text-xl md:text-3xl font-bold text-slate-300">＝</span>
-                                </div>
-
-                                <div className="w-full max-w-[280px]">
-                                    <div className="w-full text-4xl md:text-5xl font-black p-2.5 rounded-2xl bg-slate-50 text-orange-500 min-h-[56px] md:min-h-[70px] flex items-center justify-center mb-4 border-2 border-slate-100">
-                                        {inputValue || <span className="text-slate-200">?</span>}
-                                    </div>
-
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                                            <button
-                                                key={num} onClick={() => addNumber(num)}
-                                                className="bg-slate-50 hover:bg-slate-100 text-slate-700 font-extrabold text-xl py-2.5 rounded-xl active:scale-90 transition-transform border border-slate-200/50 shadow-sm cursor-pointer"
-                                            >
-                                                {num}
-                                            </button>
-                                        ))}
-                                        <button onClick={deleteLast} className="bg-rose-50 hover:bg-rose-100 text-rose-500 font-bold text-sm py-2.5 rounded-xl active:scale-95 shadow-sm cursor-pointer">
-                                            けす
-                                        </button>
-                                        <button onClick={() => addNumber(0)} className="bg-slate-50 hover:bg-slate-100 text-slate-700 font-extrabold text-xl py-2.5 rounded-xl active:scale-95 shadow-sm cursor-pointer">
-                                            0
-                                        </button>
-                                        <button onClick={onSubmit} className="bg-orange-500 hover:bg-orange-600 text-white font-black text-lg py-2.5 rounded-xl shadow-lg active:scale-95 cursor-pointer">
-                                            OK
-                                        </button>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        </div>
-                    </div>
+            <div className="space-y-4">
+              {/* Practice Grid: 九九のだん */}
+              <div className="bg-white/60 p-4 rounded-[1.5rem] lg:rounded-[2rem] border border-orange-100 shadow-sm backdrop-blur-sm">
+                <h2 className="text-sm md:text-lg font-black text-slate-600 mb-3 px-1 flex items-center gap-2">
+                  <span className="bg-amber-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">🌟</span>
+                  九九（くく）のだん
+                </h2>
+                <div className="grid grid-cols-3 gap-2 lg:gap-3">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((lv) => (
+                    <button
+                      key={lv}
+                      onClick={() => onStart(lv)}
+                      className={`${LEVEL_CONFIG[lv].color} ${LEVEL_CONFIG[lv].hoverColor} h-12 md:h-20 lg:h-16 rounded-xl lg:rounded-2xl flex flex-col items-center justify-center text-white shadow-md transition-all active:scale-95 cursor-pointer border-b-2 lg:border-b-4 border-black/10`}
+                    >
+                      <span className="text-lg md:text-2xl leading-none mb-0.5">{LEVEL_CONFIG[lv].icon}</span>
+                      <span className="font-extrabold text-[10px] md:text-sm lg:text-base">{LEVEL_CONFIG[lv].name}</span>
+                    </button>
+                  ))}
                 </div>
-            );
-        }
+              </div>
 
-        function ResultsView({ level, result, questions, onRestart, onMenu }) {
-            const isPerfect = result.accuracy === 100;
-            const isAllComplete = result.isAllComplete;
-            const incorrectQs = questions.filter(q => !q.isCorrect);
+              {/* Badge Achievements */}
+              <div className="bg-yellow-400/10 rounded-2xl p-4 border border-yellow-200">
+                <div className="flex justify-between items-center mb-3 px-1">
+                  <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-3">
+                    <h2 className="text-sm font-black text-yellow-700 flex items-center gap-1.5 uppercase tracking-wider">
+                      🏆 あつめた🌟 ({badges.length})
+                    </h2>
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].every(num => badges.includes(`${LEVEL_CONFIG[num].name} 完ぺき!`)) && (
+                      <span className="text-[10px] lg:text-xs font-black text-orange-500 bg-white px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap">
+                        ✨ ぜんぶかんぺき！がんばったね！
+                      </span>
+                    )}
+                  </div>
+                  {badges.length > 0 && (
+                    <button
+                      onClick={onClearBadges}
+                      className="text-xs font-bold text-slate-400 hover:text-rose-400 transition-colors flex items-center gap-1"
+                    >
+                      <Trash2Icon size={12} /> クリア
+                    </button>
+                  )}
+                </div>
 
-            return (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-white/95 flex items-center justify-center p-3 overflow-y-auto">
-                    <div className="max-w-md w-full bg-orange-50 rounded-[2rem] p-5 shadow-xl text-center border-4 border-white relative overflow-hidden">
-                        {isAllComplete && (
-                            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="absolute inset-0 bg-yellow-400 flex flex-col items-center justify-center z-20 p-5">
-                                <div className="text-5xl md:text-6xl mb-3">👑</div>
-                                <h2 className="text-xl md:text-2xl font-black text-white mb-2 leading-tight">
-                                    ぜんぶクリア！<br />おめでとう！
-                                </h2>
-                                <p className="text-yellow-100 font-bold mb-6 text-xs md:text-sm">
-                                    九九マスターのあかしを<br />てにいれたね！
-                                </p>
-                                <button onClick={onMenu} className="w-full py-3 rounded-2xl bg-white text-yellow-600 font-black text-base md:text-lg shadow-lg active:scale-95 cursor-pointer">
-                                    メニューへもどる
-                                </button>
-                            </motion.div>
-                        )}
-
-                        <div className="text-4xl md:text-5xl mb-2">
-                            {isPerfect ? '🏅' : LEVEL_CONFIG[level].icon}
+                <div className="grid grid-cols-9 gap-1">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => {
+                    const isMastered = badges.includes(`${LEVEL_CONFIG[num].name} 完ぺき!`);
+                    return (
+                      <div key={num} className="flex flex-col items-center gap-0.5">
+                        <div
+                          className={`text-xl lg:text-3xl transition-all duration-500 ${isMastered ? 'opacity-100 scale-100 filter-none drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]' : 'opacity-30 scale-90 grayscale'}`}
+                        >
+                          🌟
                         </div>
-                        <h2 className="text-lg md:text-2xl font-black text-slate-800 mb-0.5">
-                            {isPerfect ? 'か ん ぺ き ！' : 'お つ か れ さ ま ！'}
-                        </h2>
-                        <p className="text-slate-400 font-bold mb-4 text-xs md:text-sm">
-                            {LEVEL_CONFIG[level].name} のけっか
-                        </p>
+                        <span className={`text-[8px] lg:text-[10px] font-bold whitespace-nowrap ${isMastered ? 'text-yellow-600' : 'text-slate-300'}`}>
+                          {num}のだん
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
 
-                        <div className="grid grid-cols-2 gap-3 mb-4">
-                            <div className="bg-white rounded-2xl p-3 shadow-sm border border-orange-100">
-                                <p className="text-slate-300 font-black text-[10px] mb-0.5">せいかい</p>
-                                <p className="text-xl md:text-2xl font-black text-slate-800">{result.score} / {result.total}</p>
-                            </div>
-                            <div className="bg-white rounded-2xl p-3 shadow-sm border border-orange-100">
-                                <p className="text-slate-300 font-black text-[10px] mb-0.5">じかん</p>
-                                <p className="text-xl font-black text-slate-800 whitespace-nowrap">
-                                    {Math.floor(result.timeTaken / 60) > 0 ? `${Math.floor(result.timeTaken / 60)}ふん` : ''}
-                                    {result.timeTaken % 60}びょう
-                                </p>
-                            </div>
-                        </div>
+                {/* Special / Advanced Badges */}
+                {badges.filter(b => !b.includes('のだん')).length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-yellow-200/30 flex flex-wrap gap-1.5">
+                    {badges.filter(b => !b.includes('のだん')).map((b, i) => (
+                      <div
+                        key={i}
+                        className="bg-white border border-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm flex items-center gap-1"
+                      >
+                        <span>🌟</span> {b}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-                        {result.badgeEarned && (
-                            <div className="bg-yellow-400 text-white p-2.5 rounded-xl mb-4 shadow-md animate-bounce">
-                                <p className="font-extrabold text-[9px] uppercase tracking-wider">✨ NEW BADGE ✨</p>
-                                <p className="text-sm md:text-lg font-black">{result.badgeEarned}</p>
-                            </div>
-                        )}
+              {/* Advanced Levels & Random Options Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* おおきな数 (10 / 100 だん) */}
+                <div className="bg-white/60 p-4 rounded-[1.5rem] lg:rounded-[2rem] border border-orange-100 shadow-sm backdrop-blur-sm">
+                  <h2 className="text-sm md:text-base font-black text-slate-600 mb-3 px-1 flex items-center gap-2">
+                    <span className="bg-teal-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">✨</span>
+                    おおきな数
+                  </h2>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[10, 100].map((lv) => (
+                      <button
+                        key={lv}
+                        onClick={() => onStart(lv)}
+                        className={`${LEVEL_CONFIG[lv].color} ${LEVEL_CONFIG[lv].hoverColor} h-11 rounded-xl lg:rounded-2xl flex items-center justify-center gap-2 text-white shadow-md transition-all active:scale-95 cursor-pointer`}
+                      >
+                        <span className="text-base">{LEVEL_CONFIG[lv].icon}</span>
+                        <span className="font-black text-xs md:text-sm lg:text-base">{LEVEL_CONFIG[lv].name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-                        <div className="space-y-2 mb-4">
-                            <button onClick={onRestart} className={`${LEVEL_CONFIG[level].color} w-full py-2.5 rounded-xl text-white font-black text-sm md:text-base shadow-md active:scale-95 cursor-pointer hover:brightness-105`}>
-                                もう一回チャレンジする！
-                            </button>
-                            <button onClick={onMenu} className="w-full py-2.5 rounded-xl bg-white text-slate-400 font-black text-sm md:text-base border border-slate-200 active:scale-95 cursor-pointer hover:bg-slate-50">
-                                メニューへもどる
-                            </button>
-                        </div>
+                {/* ランダムチャレンジ */}
+                <div className="bg-white/60 p-4 rounded-[1.5rem] lg:rounded-[2rem] border border-orange-100 shadow-sm backdrop-blur-sm">
+                  <h2 className="text-sm md:text-base font-black text-slate-600 mb-3 px-1 flex items-center gap-2">
+                    <span className="bg-indigo-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">🚀</span>
+                    ランダムチャレンジ
+                  </h2>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['random_1x1', 'random_2x1'].map((lv) => (
+                      <button
+                        key={lv}
+                        onClick={() => onStart(lv)}
+                        className={`${LEVEL_CONFIG[lv].color} ${LEVEL_CONFIG[lv].hoverColor} h-11 rounded-xl lg:rounded-2xl flex items-center justify-center gap-2 text-white shadow-md transition-all active:scale-95 cursor-pointer`}
+                      >
+                        <span className="text-base">{LEVEL_CONFIG[lv].icon}</span>
+                        <span className="font-black text-xs md:text-sm lg:text-base">{LEVEL_CONFIG[lv].name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
 
-                        {incorrectQs.length > 0 && (
-                            <div className="text-left border-t border-orange-100 pt-3">
-                                <h3 className="text-rose-500 font-black mb-1.5 text-xs flex items-center gap-1.5 uppercase tracking-wider">
-                                    <span>✍️</span> ふくしゅうしよう！
-                                </h3>
-                                <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
-                                    {incorrectQs.map((q, i) => (
-                                        <div key={i} className="bg-white p-2 rounded-xl flex items-center justify-between font-bold text-slate-700 text-xs border border-rose-100">
-                                            <span>{q.a} × {q.b} ＝ {q.answer}</span>
-                                            <span className="text-rose-400 text-[10px]">きみのこたえ: {q.userAnswer ?? '?'}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+      function DrillView({
+        level,
+        question,
+        currentIndex,
+        total,
+        inputValue,
+        setInputValue,
+        feedback,
+        onSubmit,
+        onBack
+      }) {
+        const addNumber = (num) => {
+          if (inputValue.length < 3) {
+            setInputValue(inputValue + num);
+          }
+        };
+
+        const deleteLast = () => {
+          setInputValue('');
+        };
+
+        return (
+          <div className={`min-h-screen ${LEVEL_CONFIG[level].color} flex flex-col p-3 relative overflow-hidden transition-colors duration-500`}>
+            
+            {/* Answer Toast OVerlay */}
+            {feedback === 'correct' && (
+              <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none transition-all duration-300">
+                <div className="bg-white/95 px-8 py-4 rounded-full shadow-2xl border-4 border-yellow-300 flex items-center gap-3 transform scale-100 border-green-400">
+                  <CheckCircleIcon size={36} className="text-green-500" />
+                  <span className="text-3xl md:text-5xl font-black text-orange-500 text-center">せいかい！</span>
+                </div>
+              </div>
+            )}
+            {feedback === 'incorrect' && (
+              <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none transition-all duration-300">
+                <div className="bg-white/95 px-8 py-4 rounded-2xl shadow-2xl border-4 border-slate-300 flex items-center gap-3 transform">
+                  <XCircleIcon size={36} className="text-rose-500" />
+                  <span className="text-3xl md:text-5xl font-black text-slate-500 text-center">ざんねん</span>
+                </div>
+              </div>
+            )}
+
+            <div className="max-w-md mx-auto w-full flex-1 flex flex-col justify-between">
+              {/* Navigation */}
+              <div className="flex justify-between items-center text-white mt-1 mb-2">
+                <button
+                  onClick={onBack}
+                  className="text-xs md:text-sm font-bold bg-black/10 px-4 py-1.5 rounded-full flex items-center gap-1 hover:bg-black/20 transition-colors"
+                >
+                  <ArrowLeftIcon size={14} /> もどる
+                </button>
+                <div className="bg-white/20 px-4 py-1 rounded-full font-black text-xs md:text-sm tracking-widest leading-normal">
+                  {currentIndex + 1} / {total} 問
+                </div>
+              </div>
+
+              {/* Question Screen */}
+              <div className="flex-1 flex flex-col justify-center items-center py-2">
+                <div className="w-full bg-white rounded-[2rem] p-4 shadow-2xl flex flex-col items-center relative fade-enter fade-enter-active">
+                  <div className="absolute -top-6 left-6 text-4xl animate-bounce">
+                    {LEVEL_CONFIG[level].icon}
+                  </div>
+
+                  {/* formula */}
+                  <div className="flex items-center gap-3 md:gap-5 mb-4 mt-2">
+                    <span className="text-4xl md:text-6xl font-black text-slate-800 tabular-nums">{question.a}</span>
+                    <span className="text-xl md:text-3xl font-bold text-slate-300">×</span>
+                    <span className="text-4xl md:text-6xl font-black text-slate-800 tabular-nums">{question.b}</span>
+                    <span className="text-xl md:text-3xl font-bold text-slate-300">＝</span>
+                  </div>
+
+                  {/* display and pad */}
+                  <div className="w-full max-w-[280px]">
+                    <div className="w-full text-4xl md:text-5xl font-black p-2.5 rounded-2xl bg-slate-50 text-orange-500 min-h-[56px] md:min-h-[70px] flex items-center justify-center mb-4 border-2 border-slate-100">
+                      {inputValue || <span className="text-slate-200">?</span>}
                     </div>
-                </motion.div>
-            );
-        }
 
-        const rootE = document.getElementById('root');
-        const root = ReactDOM.createRoot(rootE);
-        root.render(<App />);
+                    <div className="grid grid-cols-3 gap-2">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                        <button
+                          key={num}
+                          onClick={() => addNumber(num)}
+                          className="bg-slate-50 hover:bg-slate-100 text-slate-700 font-extrabold text-xl py-2.5 rounded-xl active:scale-90 transition-all border border-slate-200/50 shadow-sm cursor-pointer"
+                        >
+                          {num}
+                        </button>
+                      ))}
+                      <button
+                        onClick={deleteLast}
+                        className="bg-rose-50 hover:bg-rose-100 text-rose-500 font-bold text-sm py-2.5 rounded-xl active:scale-95 shadow-sm cursor-pointer"
+                      >
+                        けす
+                      </button>
+                      <button
+                        onClick={() => addNumber(0)}
+                        className="bg-slate-50 hover:bg-slate-100 text-slate-700 font-extrabold text-xl py-2.5 rounded-xl active:scale-95 shadow-sm cursor-pointer"
+                      >
+                        0
+                      </button>
+                      <button
+                        onClick={onSubmit}
+                        className="bg-orange-500 hover:bg-orange-600 text-white font-black text-lg py-2.5 rounded-xl shadow-lg active:scale-95 cursor-pointer"
+                      >
+                        OK
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      function ResultsView({ level, result, questions, onRestart, onMenu }) {
+        const isPerfect = result.accuracy === 100;
+        const isAllComplete = result.isAllComplete;
+        const incorrectQs = questions.filter(q => !q.isCorrect);
+
+        return (
+          <div className="min-h-screen bg-white/95 flex items-center justify-center p-3 overflow-y-auto">
+            <div className="max-w-md w-full bg-orange-50 rounded-[2rem] p-5 shadow-xl text-center border-4 border-white relative overflow-hidden fade-enter fade-enter-active">
+              
+              {/* Special Congratulations on All complete */}
+              {isAllComplete && (
+                <div className="absolute inset-0 bg-yellow-400 flex flex-col items-center justify-center z-20 p-5 transform transition-all duration-500">
+                  <div className="text-5xl md:text-6xl mb-3">👑</div>
+                  <h2 className="text-xl md:text-2xl font-black text-white mb-2 leading-tight">
+                    ぜんぶクリア！<br />おめでとう！
+                  </h2>
+                  <p className="text-yellow-100 font-bold mb-6 text-xs md:text-sm">
+                    九九マスターのあかしを<br />てにいれたね！
+                  </p>
+                  <button
+                    onClick={onMenu}
+                    className="w-full py-3 rounded-2xl bg-white text-yellow-600 font-black text-base md:text-lg shadow-lg active:scale-95 cursor-pointer hover:bg-yellow-50 transition-colors"
+                  >
+                    メニューへもどる
+                  </button>
+                </div>
+              )}
+
+              <div className="text-4xl md:text-5xl mb-2">
+                {isPerfect ? '🏅' : LEVEL_CONFIG[level].icon}
+              </div>
+              <h2 className="text-lg md:text-2xl font-black text-slate-800 mb-0.5">
+                {isPerfect ? 'か ん ぺ き ！' : 'お つ か れ さ ま ！'}
+              </h2>
+              <p className="text-slate-400 font-bold mb-4 text-xs md:text-sm">
+                {LEVEL_CONFIG[level].name} のけっか
+              </p>
+
+              {/* stats */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-white rounded-2xl p-3 shadow-sm border border-orange-100">
+                  <p className="text-slate-300 font-black text-[10px] mb-0.5">せいかい</p>
+                  <p className="text-xl md:text-2xl font-black text-slate-800">{result.score} / {result.total}</p>
+                </div>
+                <div className="bg-white rounded-2xl p-3 shadow-sm border border-orange-100">
+                  <p className="text-slate-300 font-black text-[10px] mb-0.5">じかん</p>
+                  <p className="text-xl font-black text-slate-800 whitespace-nowrap">
+                    {Math.floor(result.timeTaken / 60) > 0 ? `${Math.floor(result.timeTaken / 60)}ふん` : ''}
+                    {result.timeTaken % 60}びょう
+                  </p>
+                </div>
+              </div>
+
+              {/* badge */}
+              {result.badgeEarned && (
+                <div className="bg-yellow-400 text-white p-2.5 rounded-xl mb-4 shadow-md transform scale-100">
+                  <p className="font-extrabold text-[9px] uppercase tracking-wider">✨ NEW BADGE ✨</p>
+                  <p className="text-sm md:text-lg font-black">{result.badgeEarned}</p>
+                </div>
+              )}
+
+              {/* retry map */}
+              <div className="space-y-2 mb-4">
+                <button
+                  onClick={onRestart}
+                  className={`${LEVEL_CONFIG[level].color} ${LEVEL_CONFIG[level].hoverColor} w-full py-2.5 rounded-xl text-white font-black text-sm md:text-base shadow-md active:scale-95 cursor-pointer`}
+                >
+                  もう一回チャレンジする！
+                </button>
+                <button
+                  onClick={onMenu}
+                  className="w-full py-2.5 rounded-xl bg-white text-slate-400 font-black text-sm md:text-base border border-slate-200 active:scale-95 cursor-pointer hover:bg-slate-50 transition-colors"
+                >
+                  メニューへもどる
+                </button>
+              </div>
+
+              {/* incorrect answers review */}
+              {incorrectQs.length > 0 && (
+                <div className="text-left border-t border-orange-100 pt-3">
+                  <h3 className="text-rose-500 font-black mb-1.5 text-xs flex items-center gap-1.5 uppercase tracking-wider">
+                    <span>✍️</span> ふくしゅうしよう！
+                  </h3>
+                  <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
+                    {incorrectQs.map((q, i) => (
+                      <div
+                        key={i}
+                        className="bg-white p-2 rounded-xl flex items-center justify-between font-bold text-slate-700 text-xs border border-rose-100"
+                      >
+                        <span>{q.a} × {q.b} ＝ {q.answer}</span>
+                        <span className="text-rose-400 text-[10px]">きみのこたえ: {q.userAnswer ?? '?'}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // Render the App
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
     </script>
 </body>
 </html>
