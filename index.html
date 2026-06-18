@@ -71,15 +71,15 @@
 
     <div id="root"></div>
 
-    <!-- React 18 & ReactDOM 18 (Cdn fallback production) -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- React 18 & ReactDOM 18 (jsDelivr high-speed stable CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
 
-    <!-- Babel standalone for runtime JSX compiler -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Babel standalone for runtime JSX compiler (jsDelivr high-speed stable CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.7/babel.min.js" crossorigin></script>
 
-    <!-- Canvas Confetti for perfect victories -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Canvas Confetti for perfect victories (jsDelivr CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" crossorigin></script>
 
     <!-- Main React App Script in Babel (transpiled in browser) -->
     <script type="text/babel">
@@ -208,7 +208,7 @@
           try {
             const savedVolume = localStorage.getItem('kuku-star-volume');
             return savedVolume !== null ? parseInt(savedVolume, 10) : 50;
-          } catch {
+          } catch (e) {
             return 50;
           }
         });
@@ -362,7 +362,7 @@
           try {
             const saved = localStorage.getItem('kuku-star-badges');
             return saved ? JSON.parse(saved) : [];
-          } catch {
+          } catch (e) {
             return [];
           }
         });
@@ -507,7 +507,7 @@
           setVolume(newVol);
           try {
             localStorage.setItem('kuku-star-volume', String(newVol));
-          } catch {}
+          } catch (e) {}
           playEffect('test', newVol);
         };
 
@@ -932,9 +932,31 @@
         );
       }
 
-      // Render the App
-      const root = ReactDOM.createRoot(document.getElementById('root'));
-      root.render(<App />);
+      // Render the App with fallback support and immediate error capture
+      try {
+        const rootEl = document.getElementById('root');
+        if (rootEl) {
+          if (typeof ReactDOM.createRoot === 'function') {
+            const root = ReactDOM.createRoot(rootEl);
+            root.render(<App />);
+          } else {
+            ReactDOM.render(<App />, rootEl);
+          }
+        } else {
+          console.error("Root element not found in DOM");
+        }
+      } catch (err) {
+        console.error("React application mount failed", err);
+        // Let's print a friendly warning on screen if there's a startup error
+        const rootEl = document.getElementById('root');
+        if (rootEl) {
+          rootEl.innerHTML = `<div style="padding: 20px; text-align: center; font-family: sans-serif; color: #721c24; background-color: #f8d7da; border-radius: 8px; margin: 20px;">
+            <h3 style="margin-top: 0;">きどうエラーが発生しました</h3>
+            <p>ブラウザか、インターネットの接続状況を確認してください。</p>
+            <p style="font-size: 11px; color: #856404; max-width: 100vw; word-wrap: break-word;">${err.message || err}</p>
+          </div>`;
+        }
+      }
     </script>
 </body>
 </html>
